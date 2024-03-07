@@ -50,29 +50,31 @@ class _MyHomePageState extends State<MyHomePage> {
               try {
                 // Dio'nun örneklenmesi
                 Dio dio = Dio();
-                // API'ye GET isteği gönderme
-                Response response = await dio.get('http://localhost:6060/api', queryParameters: {
-                  'destinations': '41.092925,28.991724',
-                  'origins': '41.06944946711272,28.992945237875354',
+                setState(() {
+                  responseData = "";
                 });
+                // API'ye GET isteği gönderme
+                Response response = await dio.get('http://192.168.1.16:600/api?destinations=41.092925,28.991724&origins=41.06944946711272,28.992945237875354');
+
                 // Yanıtın işlenmesi
                 if (response.statusCode == 200) {
                   setState(() {
                     responseData = response.data.toString();
+                    log(responseData);
                   });
                 } else {
                   setState(() {
                     responseData = 'API\'den veri alınamadı';
+                    log(responseData);
                   });
                 }
               } catch (e) {
                 // Hata durumunda hata mesajını gösterme
                 setState(() {
                   responseData = 'Hata: $e';
+                  log(responseData);
                 });
               }
-
-              log(responseData);
             },
             child: const Text("Veriyi çek"),
           ),

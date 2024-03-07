@@ -9,6 +9,7 @@ class ApiController extends CI_Controller {
 	}
 
 	public function index() {
+        var_dump("bağlantı sağlandı");
 		// buraya post edilen veriyi işleyip ekrana basacağız json deseni olarak
 		$baseApiUrl = "https://maps.googleapis.com/maps/api/distancematrix/json?";
 		$apiKey = $this->config->item('google_maps_api_key');
