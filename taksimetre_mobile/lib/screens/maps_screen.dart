@@ -219,7 +219,7 @@ class _MapsScreenState extends State<MapsScreen>
       print('First position: $firstPosition');
       print('Second position: $secondPosition');
     } else {
-      print('Lütfen iki konum seçin');
+      print('Lütfen iki konum seçiniz');
     }
   }
 
