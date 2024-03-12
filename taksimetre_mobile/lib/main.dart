@@ -1,5 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:taksimetre_mobile/bloc/map_screen_cubit.dart';
 import 'package:taksimetre_mobile/screens/home_screen.dart';
 
 import 'constants/app_colors.dart';
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
                   fontWeight: FontWeight.bold)),
           appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFFCADCF8), elevation: 0)),
-      home: Scaffold(
+      home:Scaffold(
         appBar: AppBar(
           actions: const [
             CircleAvatar(
