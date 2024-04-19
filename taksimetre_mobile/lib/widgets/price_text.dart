@@ -9,16 +9,18 @@ class PriceText extends StatelessWidget {
     this.color = AppColors.secondaryAccent,
   }) : super(key: key);
 
-  final int price;
+  final double price;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
     var colorToUse = color;
+    String priceText = '${price.toInt()}';
+    String decimalPart = (price - price.floor()).toStringAsFixed(2).substring(1);
     return Row(
       children: [
         Text(
-          '\$$price',
+          priceText,
           style: Theme.of(context)
               .textTheme
               .headline3!
@@ -26,7 +28,7 @@ class PriceText extends StatelessWidget {
         ),
         Container(
           margin: EdgeInsets.only(bottom: 12, left: 0),
-          child: Text('.30',
+          child: Text("$decimalPart TL",
               style: Theme.of(context)
                   .textTheme
                   .headline3!

@@ -3,20 +3,19 @@ import 'package:taksimetre_mobile/constants/app_colors.dart';
 
 import '../components/star_rating_widget.dart';
 import '../models/distance_matrix_response_model.dart';
+import '../models/route_response_model.dart';
 
-class DistanceMatrixResponseWidget extends StatefulWidget {
-  final DistanceMatrixResponseModel? response;
+class RouteResponseWidget extends StatefulWidget {
+  final RouteResponseModel? response;
 
-  const DistanceMatrixResponseWidget({Key? key, required this.response})
+  const RouteResponseWidget({Key? key, required this.response})
       : super(key: key);
 
   @override
-  State<DistanceMatrixResponseWidget> createState() =>
-      _DistanceMatrixResponseWidgetState();
+  State<RouteResponseWidget> createState() => _RouteResponseWidgetState();
 }
 
-class _DistanceMatrixResponseWidgetState
-    extends State<DistanceMatrixResponseWidget>
+class _RouteResponseWidgetState extends State<RouteResponseWidget>
     with SingleTickerProviderStateMixin {
   bool isMoreVisible = false;
   late AnimationController animationController;
@@ -39,7 +38,19 @@ class _DistanceMatrixResponseWidgetState
   }
 
   Widget responseWidget() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: widget.response!.steps.map((e) {
+          return listItemWidget(e);
+        }).toList(),
+      ),
+    );
+  }
+
+  Container listItemWidget(RouteStepModel e) {
     return Container(
+      width: MediaQuery.sizeOf(context).width - 24,
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -60,7 +71,7 @@ class _DistanceMatrixResponseWidgetState
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
-                flex: 1,
+                flex: 2,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -73,29 +84,28 @@ class _DistanceMatrixResponseWidgetState
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 12),
-                      topInfoTextWidget("Tutar"),
+                      topInfoTextWidget("Rota"),
                       const SizedBox(height: 12),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                            '${widget.response!.price.toStringAsFixed(2)} TL',
-                            style: const TextStyle(
-                                fontSize: 26,
-                                color: AppColors.headerTextColor,
-                                fontWeight: FontWeight.bold),
-                            maxLines: 1),
+                      Row(
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(e.duration.toString(),
+                                style: const TextStyle(
+                                    fontSize: 26,
+                                    color: AppColors.headerTextColor,
+                                    fontWeight: FontWeight.bold),
+                                maxLines: 1),
+                          ),
+                          const SizedBox(width: 6),
+                          Text("(${e.distance})",
+                              style: TextStyle(
+                                  color: Colors.grey.shade700, fontSize: 14)),
+                        ],
                       ),
-                      Visibility(
-                        visible: widget.response!.price < 90,
-                        child: Text("Minimum tutar 90TL'dir.",
-                            style: TextStyle(
-                                color: Colors.grey.shade700, fontSize: 11)),
-                      ),
                       const SizedBox(height: 12),
-                      topInfoTextWidget("Puan"),
-                      const SizedBox(height: 12),
-                      StarRatingWidget(widget.response!.routeId,null),
-                      const SizedBox(height: 12),
+                      walkWidget(e.recipe),
+                      const SizedBox(height: 12)
                     ],
                   ),
                 ),
@@ -118,7 +128,7 @@ class _DistanceMatrixResponseWidgetState
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                '${widget.response!.duration} dakika.',
+                                widget.response!.duration,
                                 style: const TextStyle(
                                     fontSize: 26,
                                     color: Colors.white,
@@ -127,6 +137,9 @@ class _DistanceMatrixResponseWidgetState
                               ),
                             ),
                             const SizedBox(height: 12),
+                            Text("(${widget.response!.distance})",
+                                style: TextStyle(
+                                    color: Colors.grey.shade700, fontSize: 14))
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -146,7 +159,7 @@ class _DistanceMatrixResponseWidgetState
                             child: Text(
                               isMoreVisible ? "Daha az " : "Daha fazlası",
                               style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   color: AppColors.headerTextColor,
                                   fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
@@ -177,24 +190,18 @@ class _DistanceMatrixResponseWidgetState
                 child: Visibility(
                   visible: isMoreVisible,
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 12),
-                        topInfoTextWidget("Kalkış"),
-                        const SizedBox(height: 6),
-                        locationWidget(widget.response!.originAddresses),
-                        const SizedBox(height: 6),
-                        //Divider(),
-                        Icon(Icons.keyboard_double_arrow_down_sharp,
-                            color: Colors.grey.shade700),
-                        const SizedBox(height: 6),
-                        topInfoTextWidget("Varış"),
-                        const SizedBox(height: 6),
-                        locationWidget(widget.response!.destinationAddresses),
-                      ],
+                      children: widget.response!.steps.map((e) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 6),
+                            walkWidget(e.recipe),
+                            const SizedBox(height: 6),
+                            const Divider(thickness: 2,)
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
@@ -211,13 +218,13 @@ class _DistanceMatrixResponseWidgetState
         style: TextStyle(color: Colors.grey.shade700, fontSize: 14));
   }
 
-  Row locationWidget(String text) {
+  Row walkWidget(String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Icon(
-          Icons.my_location,
+          Icons.directions_walk,
           size: 16,
           color: Colors.grey.shade800,
         ),

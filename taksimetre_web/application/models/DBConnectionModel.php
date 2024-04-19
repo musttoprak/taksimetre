@@ -9,7 +9,7 @@ class DBConnectionModel
 
 	public function mysqlConn()
 	{
-		$db = 'umuttepe_turizm';
+		$db = 'taksimetre';
 		$server = "localhost";
 		$username = "root";
 		$password = "";
@@ -22,173 +22,6 @@ class DBConnectionModel
 		mysqli_query($link_mysql, "SET CHARACTER SET 'utf8_turkish_ci'");
 		mysqli_query($link_mysql, "COLLATE 'utf8_turkish_ci'");
 		return $link_mysql;
-	}
-	public function  createTicket($busRouteId,$contactFullName,$contactTel,$cartFullName,$cartNo,$cartMonth,$cartYear,$cartCvc,$price){
-		$link_mysql = $this->mysqlConn();
-
-		// Türkiye saatiyle ilgili zaman dilimini ayarla
-		date_default_timezone_set('Europe/Istanbul');
-
-		// Plaka Kodunu Çekme
-		$query = "SELECT c.plate_code, br.departure_time, br.bus_plate_code FROM bus_routes AS br
-				  INNER JOIN cities AS c ON br.from_city_id = c.id
-				  WHERE br.id = $busRouteId";
-		$result = mysqli_query($link_mysql, $query);
-		$row = mysqli_fetch_assoc($result);
-		$plateCode = $row['plate_code'];
-
-
-		// Öğleden Önce veya Sonra Bilgisini Belirleme
-		$departureTime = $row['departure_time'];
-		$timeOfDay = (date('H', strtotime($departureTime)) < 12) ? "ÖÖ" : "ÖS";
-
-		// Bilet Satış Zamanını Oluşturma
-		$saleTime = date('dmYHis');
-
-		// Peron Numarasını Oluşturma
-		$peronNumarasi = chr(rand(65, 90)); // A'dan Z'ye rastgele bir harf seçme
-
-		// Seferi Yapan Otobüsün Plakasını Alma
-		$busPlateCode = $row['bus_plate_code'];
-
-		// PNR Kodunu Oluşturma
-		$pnr = $plateCode . $timeOfDay . $saleTime . $peronNumarasi . $busPlateCode;
-
-		$query = "INSERT INTO tickets (bus_route_id, contact_full_name, contact_tel, cart_no, cart_full_name, cart_month, cart_year, cart_cvc, price, status,pnr, created_at)
-		VALUES ($busRouteId, '$contactFullName', '$contactTel','$cartNo', '$cartFullName', '$cartMonth', '$cartYear', '$cartCvc', $price , 1, '$pnr',CURRENT_TIMESTAMP)";
-
-		mysqli_query($link_mysql, $query);
-
-		return mysqli_insert_id($link_mysql);
-
-		mysqli_close($link_mysql);
-	}
-
-	public function createPassenger($ticketId,$passengerName,$passengerSurname,$passengerTc,$passengeSelector,$seatNumber){
-		$link_mysql = $this->mysqlConn();
-
-		$query = "INSERT INTO passenger (ticket_id, passenger_name, passenger_surname, passenger_tc, passenger_gender,seat_number,created_at)
-		VALUES ($ticketId, '$passengerName', '$passengerSurname','$passengerTc', $passengeSelector,$seatNumber, CURRENT_TIMESTAMP)";
-
-		$result = mysqli_query($link_mysql, $query);
-
-		mysqli_close($link_mysql);
-
-		return $result;
-	}
-
-	public function changeSeatAvailability($busRouteId,$seatNumber,$status){
-		$link_mysql = $this->mysqlConn();
-
-		$query = "UPDATE seat_availability SET  seat_status = $status WHERE bus_route_id = $busRouteId AND seat_number = $seatNumber";
-
-		$result = mysqli_query($link_mysql, $query);
-
-		mysqli_close($link_mysql);
-
-		return $result;
-	}
-
-	public function  getBusRoute($id){
-		$link_mysql = $this->mysqlConn();
-		$query = "SELECT br.*, from_city.name AS from_city_name, to_city.name AS to_city_name
-              FROM bus_routes AS br
-              INNER JOIN cities AS from_city ON br.from_city_id = from_city.id
-              INNER JOIN cities AS to_city ON br.to_city_id = to_city.id
-              WHERE br.id = $id";
-
-		$result = mysqli_query($link_mysql, $query);
-
-		$data = mysqli_fetch_assoc($result);
-		mysqli_close($link_mysql);
-
-		return $data;
-	}
-	public function getBusRoutesWithSeats($fromCityId, $toCityId, $departureDate)
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$query = "SELECT br.*, from_city.name AS from_city_name, to_city.name AS to_city_name , from_city.plate_code AS plate_code
-              FROM bus_routes AS br
-              INNER JOIN cities AS from_city ON br.from_city_id = from_city.id
-              INNER JOIN cities AS to_city ON br.to_city_id = to_city.id
-              WHERE br.from_city_id = $fromCityId AND br.to_city_id = $toCityId
-              AND DATE(br.departure_time) = '$departureDate'
-              ORDER BY br.departure_time ASC";
-
-		$result = mysqli_query($link_mysql, $query);
-
-		$busRoutes = array();
-		while ($row = mysqli_fetch_assoc($result)) {
-			$query2 = "SELECT *
-              FROM seat_availability WHERE bus_route_id = '".$row['id']."'" ;
-			$result2 = mysqli_query($link_mysql, $query2);
-
-			$seats = array();
-			while ($row2 = mysqli_fetch_assoc($result2)) {
-				$seats[] = $row2;
-			}
-			$busRoutes[] = array(
-				'bus' => $row,
-				'seat' => $seats
-			);
-		}
-
-		mysqli_close($link_mysql);
-
-		return $busRoutes;
-	}
-
-	public function getBus()
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$query = "SELECT br.*, from_city.name AS from_city_name, to_city.name AS to_city_name , from_city.plate_code AS plate_code
-              FROM bus_routes AS br
-              INNER JOIN cities AS from_city ON br.from_city_id = from_city.id
-              INNER JOIN cities AS to_city ON br.to_city_id = to_city.id
-              ORDER BY br.departure_time ASC";
-
-		$result = mysqli_query($link_mysql, $query);
-
-		$busRoutes = array();
-		while ($row = mysqli_fetch_assoc($result)) {
-			$busRoutes[] = $row;
-		}
-
-		mysqli_close($link_mysql);
-
-		return $busRoutes;
-	}
-
-	public function getCities()
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$query = "SELECT * FROM cities";
-		$result = mysqli_query($link_mysql, $query);
-
-		$cities = array();
-		while ($row = mysqli_fetch_assoc($result)) {
-			$cities[] = $row;
-		}
-
-		mysqli_close($link_mysql);
-
-		return $cities;
-	}
-
-	public function getUserInfo($id)
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$query = "SELECT * FROM account WHERE id=$id AND isActive = 1";
-		$result = mysqli_query($link_mysql, $query);
-
-		$data = mysqli_fetch_assoc($result);
-		mysqli_close($link_mysql);
-
-		return $data;
 	}
 
 	public function checkLogin($email, $password)
@@ -210,59 +43,6 @@ class DBConnectionModel
 		mysqli_close($link_mysql);
 	}
 
-	public function updateUserInfo($id, $fullName, $tcKimlikNo, $email, $tel, $gender, $birthDate)
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$id = mysqli_real_escape_string($link_mysql, $id);
-		$fullName = mysqli_real_escape_string($link_mysql, $fullName);
-		$tcKimlikNo = mysqli_real_escape_string($link_mysql, $tcKimlikNo);
-		$email = mysqli_real_escape_string($link_mysql, $email);
-		$tel = mysqli_real_escape_string($link_mysql, $tel);
-		$gender = mysqli_real_escape_string($link_mysql, $gender);
-		$birthDate = mysqli_real_escape_string($link_mysql, $birthDate);
-
-		$query = "UPDATE account SET fullName = '$fullName', tcKimlikNo = '$tcKimlikNo', email = '$email', tel = '$tel', gender = '$gender', birthDate = '$birthDate' WHERE id = $id";
-		$result = mysqli_query($link_mysql, $query);
-
-		if ($result) {
-			return true;
-		} else {
-			return false;
-		}
-
-		mysqli_close($link_mysql);
-	}
-
-	public function updateUserPassword($id, $newPassword)
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$query = "UPDATE account SET password = '$newPassword' WHERE id = $id";
-		$result = mysqli_query($link_mysql, $query);
-
-		if ($result) {
-			return true;
-		} else {
-			return false;
-		}
-		mysqli_close($link_mysql);
-	}
-	public function setBusPlateCode($plate,$id)
-	{
-		$link_mysql = $this->mysqlConn();
-
-		$query = "UPDATE bus_routes SET bus_plate_code = '$plate' WHERE id = $id";
-		$result = mysqli_query($link_mysql, $query);
-
-		if ($result) {
-			return true;
-		} else {
-			return false;
-		}
-		mysqli_close($link_mysql);
-	}
-
 	public function deleteAccount($id)
 	{
 		$link_mysql = $this->mysqlConn();
@@ -278,45 +58,178 @@ class DBConnectionModel
 		mysqli_close($link_mysql);
 	}
 
-	public function getUserByEmail($email)
-	{
-		$link_mysql = $this->mysqlConn();
+    public function loginUser($name, $password)
+    {
+        $link_mysql = $this->mysqlConn();
 
-		$email = mysqli_real_escape_string($link_mysql, $email);
+        $name = mysqli_real_escape_string($link_mysql, $name);
 
-		$query = "SELECT * FROM account WHERE email = '$email'";
-		$result = mysqli_query($link_mysql, $query);
+        $query = "SELECT id, name, password FROM user WHERE name = '$name' AND active = 1";
+        $result = mysqli_query($link_mysql, $query);
 
-		if ($result && mysqli_num_rows($result) >= 1) {
-			return true;
-		} else {
-			return false;
-		}
+        if ($result && mysqli_num_rows($result) == 1) {
+            $user = mysqli_fetch_assoc($result);
+            $hashedPasswordFromDB = $user['password'];
 
-		mysqli_close($link_mysql);
-	}
+            if (password_verify($password, $hashedPasswordFromDB)) {
+                mysqli_close($link_mysql);
+                unset($user['password']);
+                return $user['id']; // Kullanıcı ID'sini döndür
+            }
+        }
 
-	public function registerUser($fullName, $email, $birthDate, $gender, $tcKimlikNo, $tel, $password)
-	{
-		$link_mysql = $this->mysqlConn();
+        mysqli_close($link_mysql);
+        return false;
+    }
 
-		$fullName = mysqli_real_escape_string($link_mysql, $fullName);
-		$email = mysqli_real_escape_string($link_mysql, $email);
-		$birthDate = mysqli_real_escape_string($link_mysql, $birthDate);
-		$gender = mysqli_real_escape_string($link_mysql, $gender);
-		$tcKimlikNo = mysqli_real_escape_string($link_mysql, $tcKimlikNo);
-		$tel = mysqli_real_escape_string($link_mysql, $tel);
-		$password = mysqli_real_escape_string($link_mysql, $password);
+    public function changeRatingRoute($id, $rating)
+    {
+        $link_mysql = $this->mysqlConn();
 
-		$query = "INSERT INTO account (fullName, email, birthDate, gender, tcKimlikNo, tel, password, isActive) VALUES ('$fullName', '$email', '$birthDate', '$gender', '$tcKimlikNo', '$tel', '$password', 1)";
-		$result = mysqli_query($link_mysql, $query);
+        if ($link_mysql) {
+            $id = mysqli_real_escape_string($link_mysql, $id);
+            $rating = mysqli_real_escape_string($link_mysql, $rating);
 
-		if ($result) {
-			return true;
-		} else {
-			return false;
-		}
+            $query = "UPDATE route SET star_rating = $rating WHERE id = $id";
 
-		mysqli_close($link_mysql);
-	}
+            if (mysqli_query($link_mysql, $query)) {
+                return true;
+            } else {
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            mysqli_close($link_mysql);
+        } else {
+            return "MySQL bağlantısı başarısız.";
+        }
+    }
+
+
+    public function getRoutes($userId)
+    {
+        // MySQL bağlantısını al
+        $link_mysql = $this->mysqlConn();
+
+        // MySQL bağlantısı başarılıysa
+        if ($link_mysql) {
+            // Kullanıcı girdisini güvenli hale getir
+            $userId = mysqli_real_escape_string($link_mysql, $userId);
+
+            // SELECT sorgusunu oluştur
+            $query = "SELECT * FROM route WHERE userId = $userId ORDER BY created_at DESC";
+
+            // Sorguyu çalıştır ve sonucu al
+            $result = mysqli_query($link_mysql, $query);
+
+            // Sorgu başarılıysa
+            if ($result) {
+                $routes = array();
+
+                // Tüm sonuçları diziye ekleyerek döngü yap
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $routes[] = array(
+                        'routeId' => (int)$row['id'],
+                        'duration' => (int)$row['duration'],
+                        'price' => (double)$row['price'],
+                        'destinationAddresses' => $row['destination_address'],
+                        'originAddresses' => $row['origin_address'],
+                        'destinations' => $row['destinations'],
+                        'origins' => $row['origins'],
+                        'starRating' => (int)$row['star_rating'],
+                    );
+                }
+
+                // Sonuçları döndür
+                return $routes;
+            } else {
+                // Sorgu başarısız olduysa hata döndür
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            // MySQL bağlantısını kapat
+            mysqli_close($link_mysql);
+        } else {
+            // MySQL bağlantısı başarısızsa hata döndür
+            return "MySQL bağlantısı başarısız.";
+        }
+    }
+
+
+    public function addRoute($userId,$destination_adress,$origin_adress,$destinations,$origins,$duration,$price)
+    {
+        // MySQL bağlantısını al
+        $link_mysql = $this->mysqlConn();
+
+        // MySQL bağlantısı başarılıysa
+        if ($link_mysql) {
+            // Kullanıcı girdilerini güvenli hale getir
+            $userId = mysqli_real_escape_string($link_mysql, $userId);
+            $destination_adress = mysqli_real_escape_string($link_mysql, $destination_adress);
+            $origin_adress = mysqli_real_escape_string($link_mysql, $origin_adress);
+            $destinations = mysqli_real_escape_string($link_mysql, $destinations);
+            $origins = mysqli_real_escape_string($link_mysql, $origins);
+            $price = mysqli_real_escape_string($link_mysql, $price);
+
+            // INSERT INTO sorgusunu oluştur
+            $query = "INSERT INTO route (userId, destination_address, origin_address,destinations,origins,duration, price, star_rating) VALUES ($userId, '$destination_adress', '$origin_adress','$destinations','$origins','$duration', $price,0)";
+            // Sorguyu çalıştır ve sonucu kontrol et
+            if (mysqli_query($link_mysql, $query)) {
+                // Yeni eklenen route ID'sini döndür
+                return mysqli_insert_id($link_mysql);
+            } else {
+                // Sorgu başarısız olduysa hata döndür
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            // MySQL bağlantısını kapat
+            mysqli_close($link_mysql);
+        } else {
+            // MySQL bağlantısı başarısızsa hata döndür
+            return "MySQL bağlantısı başarısız.";
+        }
+
+    }
+
+
+    public function registerUser($name, $password)
+    {
+        $link_mysql = $this->mysqlConn();
+
+        // Güvenlik: SQL injection saldırılarına karşı koruma için kullanıcı girişlerini kaçış karakterleriyle işleyin
+        $name = mysqli_real_escape_string($link_mysql, $name);
+
+        // Kullanıcı adının veritabanında mevcut olup olmadığını kontrol et
+        $check_query = "SELECT COUNT(*) FROM user WHERE name = ?";
+        $check_stmt = mysqli_prepare($link_mysql, $check_query);
+        mysqli_stmt_bind_param($check_stmt, 's', $name);
+        mysqli_stmt_execute($check_stmt);
+        mysqli_stmt_bind_result($check_stmt, $count);
+        mysqli_stmt_fetch($check_stmt);
+        mysqli_stmt_close($check_stmt);
+
+        // Eğer kullanıcı adı mevcutsa false dön
+        if ($count > 0) {
+            mysqli_close($link_mysql); // veritabanı bağlantısını kapat
+            return false;
+        }
+
+        // Güvenlik: Şifreleri hashleyerek güvence altına alın
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Şifreli şifreyi veritabanına kaydet
+        $password = mysqli_real_escape_string($link_mysql, $hashed_password);
+
+        // Güvenlik: Prepared statements kullanarak SQL sorgularını oluşturun
+        $query = "INSERT INTO user (name, password, active) VALUES ('$name', '$password',1)";
+        $result =  mysqli_query($link_mysql,$query);
+
+        mysqli_close($link_mysql);
+        if ($result) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 }

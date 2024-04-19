@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksimetre_mobile/screens/Welcome/welcome_screen.dart';
+import 'package:taksimetre_mobile/screens/home.dart';
 import 'constants/constants.dart';
 import 'constants/app_colors.dart';
 
@@ -7,8 +9,34 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool? isLogin;
+
+  @override
+  void initState() {
+    _checkLogin();
+    super.initState();
+  }
+
+  Future<void> _checkLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('name') != null) {
+      setState(() {
+        isLogin = true;
+      });
+    } else {
+      setState(() {
+        isLogin = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +85,22 @@ class MyApp extends StatelessWidget {
           appBarTheme: const AppBarTheme(
               backgroundColor: Color(0xFFCADCF8), elevation: 0)),
       //home: Home(),
-      home: const WelcomeScreen(),
+      home: isLogin == null
+          ? const LoadingWidget()
+          : isLogin!
+              ? const Home()
+              : const WelcomeScreen(),
     );
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

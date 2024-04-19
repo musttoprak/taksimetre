@@ -1,90 +1,34 @@
-class DistanceMatrixResponseModel {
-  final List<String> destinationAddresses;
-  final List<String> originAddresses;
-  final List<DistanceRow> rows;
-  final String status;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-  DistanceMatrixResponseModel({
-    required this.destinationAddresses,
-    required this.originAddresses,
-    required this.rows,
-    required this.status,
-  });
+class DistanceMatrixResponseModel {
+  final int routeId;
+  final int duration;
+  final double price;
+  final String destinationAddresses;
+  final String originAddresses;
+  final LatLng destinations;
+  final LatLng origins;
+  final int starRating;
+
+  DistanceMatrixResponseModel(
+      {required this.routeId,
+      required this.duration,
+      required this.price,
+      required this.destinationAddresses,
+      required this.originAddresses,
+      required this.destinations,
+      required this.origins,
+      required this.starRating});
 
   factory DistanceMatrixResponseModel.fromJson(Map<String, dynamic> json) {
     return DistanceMatrixResponseModel(
-      destinationAddresses: List<String>.from(json['destination_addresses']),
-      originAddresses: List<String>.from(json['origin_addresses']),
-      rows: List<DistanceRow>.from(json['rows'].map((row) => DistanceRow.fromJson(row))),
-      status: json['status'],
-    );
-  }
-}
-
-class DistanceRow {
-  final List<DistanceElement> elements;
-
-  DistanceRow({
-    required this.elements,
-  });
-
-  factory DistanceRow.fromJson(Map<String, dynamic> json) {
-    return DistanceRow(
-      elements: List<DistanceElement>.from(json['elements'].map((element) => DistanceElement.fromJson(element))),
-    );
-  }
-}
-
-class DistanceElement {
-  final DistanceModel distance;
-  final DistanceDuration duration;
-  final String status;
-
-  DistanceElement({
-    required this.distance,
-    required this.duration,
-    required this.status,
-  });
-
-  factory DistanceElement.fromJson(Map<String, dynamic> json) {
-    return DistanceElement(
-      distance: DistanceModel.fromJson(json['distance']),
-      duration: DistanceDuration.fromJson(json['duration']),
-      status: json['status'],
-    );
-  }
-}
-
-class DistanceModel {
-  final String text;
-  final int value;
-
-  DistanceModel({
-    required this.text,
-    required this.value,
-  });
-
-  factory DistanceModel.fromJson(Map<String, dynamic> json) {
-    return DistanceModel(
-      text: json['text'],
-      value: json['value'],
-    );
-  }
-}
-
-class DistanceDuration {
-  final String text;
-  final int value;
-
-  DistanceDuration({
-    required this.text,
-    required this.value,
-  });
-
-  factory DistanceDuration.fromJson(Map<String, dynamic> json) {
-    return DistanceDuration(
-      text: json['text'],
-      value: json['value'],
-    );
+        routeId: json['routeId'],
+        duration: json['duration'],
+        price: double.parse(json['price'].toString()),
+        destinationAddresses: json['destinationAddresses'],
+        originAddresses: json['originAddresses'],
+        destinations: LatLng(double.parse(json['destinations'].toString().split(",")[0]),double.parse(json['destinations'].toString().split(",")[1])),
+        origins: LatLng(double.parse(json['origins'].toString().split(",")[0]),double.parse(json['origins'].toString().split(",")[1])),
+        starRating: json['starRating']);
   }
 }

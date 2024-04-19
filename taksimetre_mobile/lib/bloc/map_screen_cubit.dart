@@ -9,11 +9,15 @@ import 'package:location/location.dart';
 import 'package:taksimetre_mobile/models/taxi_stands_response_model.dart';
 import 'package:taksimetre_mobile/services/mapsApiService.dart';
 
+import '../constants/app_colors.dart';
 import '../models/distance_matrix_response_model.dart';
+import '../models/route_response_model.dart';
 import '../models/search_text_response_model.dart';
+import '../services/routeApiService.dart';
 
 class MapScreenCubit extends Cubit<MapScreenState> {
   GoogleMapController? mapController;
+  DistanceMatrixResponseModel? distanceMatrixResponseModel;
   bool isLoading = true;
   PolylinePoints polylinePoints = PolylinePoints();
   String googleAPiKey = "AIzaSyCBWnZj5N6sGEpN-HzAPO5MZdSHspnDmZc";
@@ -24,6 +28,7 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   bool isButtonActive = true;
   LocationData? currentLocation;
   bool isStackVisible = false;
+  bool isTaxiInfoVisible = false;
   DistanceMatrixResponseModel? response;
   BuildContext context;
   AnimationController animationController;
@@ -33,11 +38,19 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   LatLng? location;
   SearchTextResponseModel? model;
   List<TaxiStandResponseModel> listStands = [];
+  RouteResponseModel? routeResponseModel;
 
-  MapScreenCubit(this.context, this.animationController,
+  MapScreenCubit(this.context,this.distanceMatrixResponseModel ,this.animationController,
       this.myLocationController, this.locationController)
       : super(MapScreenInitialState()) {
     getCurrentLocation();
+  }
+
+  void clearResult() {
+    response = null;
+    routeResponseModel = null;
+    removeMarkerAll();
+    clearSearch();
   }
 
   Future<void> getCurrentLocation() async {
@@ -70,7 +83,22 @@ class MapScreenCubit extends Cubit<MapScreenState> {
       }
       emit(MapScreenLocationState(currentLocation!));
       changeLoadingView();
+      if(distanceMatrixResponseModel != null){
+        showRoute();
+      }
     });
+  }
+
+
+  Future<void> showRoute() async {
+    removeMarkerAll();
+    addMarker(distanceMatrixResponseModel!.destinations);
+    addMarker(distanceMatrixResponseModel!.origins);
+    await poly(false);
+    response = distanceMatrixResponseModel;
+    isStackVisible = false;
+    _zoomToPolygon(distanceMatrixResponseModel!.destinations, distanceMatrixResponseModel!.origins);
+    emit(MapScreenChangeDataState(response!));
   }
 
   Future<BitmapDescriptor> getCustomMarkerIcon(String imagePath) async {
@@ -79,35 +107,52 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     return BitmapDescriptor.fromBytes(imageData);
   }
 
-  Future<String?> getPhotoForLocation(double latitude,double longitude) async {
-
-  }
+  Future<String?> getPhotoForLocation(
+      double latitude, double longitude) async {}
 
   void addTaxiStands() async {
     for (var e in listStands) {
-      // Koordinatlara göre fotoğraf al
-      //final photoUrl = await getPhotoForLocation(e.latitude, e.longitude);
-
-      // Örnek olarak taksi simgesi 'taxi_icon.png' olarak varsayalım
       final icon = await getCustomMarkerIcon('assets/taxi_icon.png');
 
-      // Fotoğraf URL'si bulunamazsa varsayılan bir fotoğraf kullan
-      //final photo = photoUrl != null ? NetworkImage(photoUrl) : AssetImage('assets/taxi_icon.png');
-
       taxiStandsMarker.add(Marker(
-        markerId: MarkerId('${e.latitude}-${e.longitude}'),
-        position: LatLng(e.latitude, e.longitude),
-        icon: icon,
-        infoWindow: InfoWindow(
-          title: e.name,
-          snippet: "${e.distance.toStringAsFixed(2)} km",
-        )
-      ));
+          markerId: MarkerId('${e.latitude}-${e.longitude}'),
+          position: LatLng(e.latitude, e.longitude),
+          icon: icon,
+          infoWindow: InfoWindow(
+            title: e.name,
+            snippet:
+                "${e.distance.toStringAsFixed(2)} km - Yol tarifi için tıkla",
+            onTap: () async {
+              await getTaxiStandsRoute(e);
+              walkTaxiStandsRoutes();
+              await polyWalk(LatLng(e.latitude, e.longitude));
+              _zoomToPolygon(LatLng(currentLocation!.latitude!, currentLocation!.longitude!), LatLng(e.latitude, e.longitude));
+              mapController!.hideMarkerInfoWindow(
+                  MarkerId('${e.latitude}-${e.longitude}'));
+              emit(MapScreenAddTaxiPolyState(polylines));
+            },
+          )));
     }
     allMarkers.addAll(taxiStandsMarker);
     emit(MapScreenAddTaxiStandsState(allMarkers));
   }
 
+  void walkTaxiStandsRoutes() {
+    removeMarkerAll();
+    isStackVisible = false;
+    isTaxiInfoVisible = true;
+  }
+
+  Future<RouteResponseModel?> getTaxiStandsRoute(
+      TaxiStandResponseModel e) async {
+    await MapsApiService.getTaxiStandsRoute(
+            LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+            LatLng(e.latitude, e.longitude))
+        .then((value) {
+      routeResponseModel = value;
+    });
+    return null;
+  }
 
   Future<void> changeVisible() async {
     if (isStackVisible) {
@@ -115,6 +160,7 @@ class MapScreenCubit extends Cubit<MapScreenState> {
       await Future.delayed(const Duration(milliseconds: 500));
       isStackVisible = false;
     } else {
+      removeMarkerAll();
       isStackVisible = true;
       animationController.forward();
     }
@@ -150,6 +196,36 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     markers = {};
     polylines = {};
     emit(MapScreenRemoveMarkerState(polylines, markers));
+  }
+
+  Future<void> polyWalk(LatLng e) async {
+    List<LatLng> polylineCoordinates = [];
+
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      googleAPiKey,
+      PointLatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+      PointLatLng(e.latitude, e.longitude),
+      travelMode: TravelMode.walking,
+    );
+
+    if (result.points.isNotEmpty) {
+      for (var point in result.points) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      }
+    } else {
+      changeButtonText(false);
+    }
+    PolylineId id = const PolylineId("poly");
+    Polyline polyline = Polyline(
+      polylineId: id,
+      color: AppColors.headerTextColor,
+      points: polylineCoordinates,
+      jointType: JointType.round,
+      patterns: [PatternItem.dot, PatternItem.gap(10)],
+      width: 8,
+    );
+    polylines[id] = polyline;
+    return;
   }
 
   Future<void> poly(bool isCurrentLocation) async {
@@ -188,7 +264,7 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     PolylineId id = const PolylineId("poly");
     Polyline polyline = Polyline(
       polylineId: id,
-      color: Colors.deepPurpleAccent,
+      color: AppColors.headerTextColor,
       points: polylineCoordinates,
       width: 8,
     );
@@ -300,6 +376,7 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   void mapsControllerInitalize(GoogleMapController mapController) {
     this.mapController = mapController;
   }
+
 }
 
 abstract class MapScreenState {}
@@ -353,4 +430,10 @@ class MapScreenAddTaxiStandsState extends MapScreenState {
   final Set<Marker> allMarkers;
 
   MapScreenAddTaxiStandsState(this.allMarkers);
+}
+
+class MapScreenAddTaxiPolyState extends MapScreenState {
+  final Map<PolylineId, Polyline> poly;
+
+  MapScreenAddTaxiPolyState(this.poly);
 }

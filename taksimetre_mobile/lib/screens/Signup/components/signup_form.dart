@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:taksimetre_mobile/services/autApiService.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../components/already_have_an_account_acheck.dart';
+import '../../../components/showSnackbar.dart';
 import '../../../constants/constants.dart';
+import '../../../services/autApiService.dart';
 import '../../Login/login_screen.dart';
 
 class SignUpForm extends StatefulWidget {
@@ -23,12 +25,17 @@ class _SignUpFormState extends State<SignUpForm> {
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
-      // Form geçerli, verileri al
-      String email = _nameController.text;
-      String password = _passwordController.text;
+      String name = _nameController.text.trim();
+      String password = _passwordController.text.trim();
 
-      bool result = await AuthApiService.register(email, password);
-      print(result);
+      await AuthApiService.register(name, password).then((value) async {
+        if (value) {
+          ShowMySnackbar.snackbarShow(context, true, "Kayıt işlemi başarılıyla gerçekleştirildi.");
+          Navigator.pop(context);
+        }else{
+          ShowMySnackbar.snackbarShow(context, false, "Bu Ad'a sahip başka bir kullanıcı var.");
+        }
+      });
     }
   }
 

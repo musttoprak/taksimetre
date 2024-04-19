@@ -7,7 +7,114 @@ class ApiController extends CI_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('DBConnectionModel');
         $this->load->config('custom');
+    }
+
+    public function getRoutes()
+    {
+        $userId = $this->input->get('userId');
+
+        $routes = $this->DBConnectionModel->getRoutes($userId);
+
+        echo json_encode($routes);
+    }
+    public function route()
+    {
+        // buraya post edilen veriyi işleyip ekrana basacağız json deseni olarak
+        $baseApiUrl = "https://maps.googleapis.com/maps/api/directions/json?";
+        $apiKey = $this->config->item('google_maps_api_key');
+        $userId = $this->input->get('userId');
+        $destination = $this->input->get('destination');
+        $origin = $this->input->get('origin');
+        $units = "imperial";
+        $apiUrl = $baseApiUrl . "destination=" . $destination . "&origin=" . $origin . "&mode=walking&language=tr" . "&key=" . $apiKey;
+
+        $response = file_get_contents($apiUrl);
+
+        // API'den gelen veriyi ekrana basma
+        if ($response !== false) {
+            // Veriyi JSON'dan diziye çevirme
+            $responseData = json_decode($response, true);
+
+            // Dizi olarak veriyi işleme veya ekrana basma
+            if ($responseData !== null) {
+
+                $legs = $responseData['routes'][0]['legs'][0];
+
+                $distance_meters_legs = $legs['distance']['value'];
+                $duration_seconds_legs = $legs['duration']['value'];
+
+                $arr = $this->distanceAndDurationCalculator($distance_meters_legs,$duration_seconds_legs);
+
+                $steps = $responseData['routes'][0]['legs'][0]['steps'];
+                $stepsArray = array();
+                foreach ($steps as $step) {
+                    $distance_meters = $step['distance']['value'];
+                    $duration_seconds = $step['duration']['value'];
+
+                    $arrSteps = $this->distanceAndDurationCalculator($distance_meters,$duration_seconds);
+
+                    $recipe = strip_tags($step['html_instructions']); // text hali
+                    $stepsArray[] = array(
+                        'distance' => $arrSteps[0],
+                        'duration' => $arrSteps[1],
+                        'recipe' => $recipe,
+                    );
+                }
+                $result = array(
+                    'distance' => $arr[0],
+                    'duration' => $arr[1],
+                    'steps' => $stepsArray
+                );
+
+                $data = json_encode($result);
+            } else {
+                // JSON çözümleme hatası
+                $data = "JSON verisi çözümlenemedi.";
+            }
+        } else {
+            // API'ye istek gönderme hatası
+            $data = "API'ye istek gönderilirken bir hata oluştu.";
+        }
+
+        $this->load->view('api/index', array('data' => $data));
+    }
+
+    public function changeRatingRoute()
+    {
+        $id = $this->input->get('id');
+        $rating = $this->input->get('rating');
+
+        $result = $this->DBConnectionModel->changeRatingRoute($id, $rating);
+
+        echo $result;
+    }
+
+    private function distanceAndDurationCalculator($distance_meters,$duration_seconds)
+    {
+        // Uzaklık değeri km olarak hesaplanıyor
+        if ($distance_meters < 1000) {
+            $distance = $distance_meters . " m";
+        } else {
+            $distance = ($distance_meters / 1000) . " km";
+        }
+
+        // Süre değeri dakika ve saniye olarak hesaplanıyor
+        if ($duration_seconds < 60) {
+            $duration = $duration_seconds . " s";
+        } else {
+            $minutes = floor($duration_seconds / 60);
+            $seconds = $duration_seconds % 60;
+            if ($seconds > 0) {
+                $duration = $minutes . " dk " . $seconds . " s";
+            } else {
+                $duration = $minutes . " dk";
+            }
+        }
+
+
+        return array($distance,$duration);
     }
 
     public function index()
@@ -15,6 +122,8 @@ class ApiController extends CI_Controller
         // buraya post edilen veriyi işleyip ekrana basacağız json deseni olarak
         $baseApiUrl = "https://maps.googleapis.com/maps/api/distancematrix/json?";
         $apiKey = $this->config->item('google_maps_api_key');
+
+        $userId = $this->input->get('userId');
         $destinations = $this->input->get('destinations');
         $origins = $this->input->get('origins');
         $units = "imperial";
@@ -34,8 +143,31 @@ class ApiController extends CI_Controller
 
             // Dizi olarak veriyi işleme veya ekrana basma
             if ($responseData !== null) {
-                // Örneğin, JSON verisinin tamamını ekrana basabiliriz
-                $data = json_encode($responseData);
+                $duration_value = $responseData['rows'][0]['elements'][0]['duration']['value'];
+                $duration_value = ceil($duration_value / 60); // Dakika cinsine çevir
+
+                // Taksi ücretini hesapla (örneğin, km başına sabit bir ücret varsayalım)
+                $distance_value = $responseData['rows'][0]['elements'][0]['distance']['value'];
+                $fare_per_km = 17.61;
+                $distance_km = $distance_value / 1000; // metre cinsinden mesafeyi kilometreye çevir
+                $departure_price = 24.55;
+                $price = round($distance_km * $fare_per_km, 2) + $departure_price; // 2 ondalık basamak ile yuvarla
+
+                $routeId = $this->DBConnectionModel->addRoute($userId,$responseData['destination_addresses'][0],$responseData['origin_addresses'][0],$destinations,$origins,$duration_value,$price);
+                // JSON formatında sonuçları düzenle
+                $result = json_encode(array(
+                    'routeId' =>  $routeId,
+                    'duration' => $duration_value,
+                    'price' => $price,
+                    'destinationAddresses' => $responseData['destination_addresses'][0],
+                    'originAddresses' => $responseData['origin_addresses'][0],
+                    'destinations' => $destinations,
+                    'origins' => $origins,
+                    'starRating' => 0
+                ));
+
+                // Sonuçları ekrana bas
+                $data = $result;
             } else {
                 // JSON çözümleme hatası
                 $data = "JSON verisi çözümlenemedi.";
@@ -86,9 +218,10 @@ class ApiController extends CI_Controller
     }
 
 
-    private function calculateDistance($lat1, $lon1, $lat2, $lon2) {
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
         $theta = $lon1 - $lon2;
-        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
         $dist = acos($dist);
         $dist = rad2deg($dist);
         $miles = $dist * 60 * 1.1515;
@@ -133,7 +266,7 @@ class ApiController extends CI_Controller
                     }
                 }
                 // En yakın 10 taksi durağını sırala ve al
-                usort($nearbyStands, function($a, $b) {
+                usort($nearbyStands, function ($a, $b) {
                     if ($a['distance'] == $b['distance']) {
                         return 0;
                     }
@@ -157,7 +290,9 @@ class ApiController extends CI_Controller
         $name = $this->input->get('name');
         $password = $this->input->get('password');
 
-        echo "true";
+        $result = $this->DBConnectionModel->loginUser($name, $password);
+
+        echo !$result ? "null" : $result;
     }
 
 
@@ -166,6 +301,10 @@ class ApiController extends CI_Controller
         $name = $this->input->get('name');
         $password = $this->input->get('password');
 
-        echo "true";
+        $result = $this->DBConnectionModel->registerUser($name, $password);
+
+        echo $result ? 1 : 0;
     }
+
+
 }

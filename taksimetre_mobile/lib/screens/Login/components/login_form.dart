@@ -4,6 +4,7 @@ import 'package:taksimetre_mobile/screens/home.dart';
 import 'package:taksimetre_mobile/services/autApiService.dart';
 
 import '../../../components/already_have_an_account_acheck.dart';
+import '../../../components/showSnackbar.dart';
 import '../../../constants/constants.dart';
 import '../../Signup/signup_screen.dart';
 
@@ -25,25 +26,33 @@ class _LoginFormState extends State<LoginForm> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      // Form geçerli, verileri al
-      String name = _nameController.text;
-      String password = _passwordController.text;
+      String name = _nameController.text.trim();
+      String password = _passwordController.text.trim();
 
       await AuthApiService.login(name, password).then((value) async {
-        if (value) {
+        if (value != null) {
           await SharedPreferences.getInstance().then((prefs) {
+            print(value);
+            prefs.setString('id', value.toString());
             prefs.setString('name', name);
             prefs.setString('password', password);
 
-            Navigator.push(
+            ShowMySnackbar.snackbarShow(
+                context, true, "Giriş işlemi başarılıyla gerçekleştirildi");
+
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                 builder: (context) {
                   return const Home();
                 },
               ),
+              (route) => false,
             );
           });
+        } else {
+          ShowMySnackbar.snackbarShow(
+              context, false, "Lütfen giriş bilgilerinizi kontrol ediniz.");
         }
       });
     }

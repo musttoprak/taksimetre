@@ -2,32 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_colors.dart';
-import '../models/spending_category_model.dart';
-import '../widgets/spending_category.dart';
+import '../models/distance_matrix_response_model.dart';
+import '../services/routeApiService.dart';
+import '../widgets/route_response_list_widget.dart';
 import 'maps_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  static const categoryModels = [
-    SpendingCategoryModel(
-      'Kağıthane',
-      'assets/image1.png',
-      28,
-      AppColors.categoryColor1,
-    ),
-    SpendingCategoryModel(
-      'Umuttepe',
-      'assets/image2.png',
-      28,
-      AppColors.categoryColor2,
-    ),
-    SpendingCategoryModel(
-      'Şişli',
-      'assets/image3.png',
-      28,
-      AppColors.categoryColor3,
-    ),
-  ];
-
   const HomeScreen({super.key});
 
   @override
@@ -36,11 +16,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? name;
+  bool isLoading = true;
+  List<DistanceMatrixResponseModel>? model;
 
   @override
   void initState() {
-    super.initState();
+    _getRoute();
     _loadName();
+    super.initState();
+  }
+
+  Future<void> _getRoute() async {
+    List<DistanceMatrixResponseModel>? result = await RouteApiService.getRoutes();
+    setState(() {
+      model = result;
+      isLoading = false;
+      print(model?.length);
+    });
   }
 
   // SharedPreferences'ten name değerini yükleyen fonksiyon
@@ -80,11 +72,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 left: 30,
                 right: 30,
                 child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MapsScreen()));
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MapsScreen(null),
+                      ),
+                    );
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -109,20 +103,29 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             ]),
           ),
-          //const Padding(
-          //  padding: EdgeInsets.symmetric(horizontal: 36.0, vertical: 24),
-          //  child: SearchBar(),
-          //),
           Expanded(
-            child: ListView(children: [
-              for (var model in HomeScreen.categoryModels)
-                Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 36.0, vertical: 16),
-                    child: SpendingCategory(model))
-            ]),
-          ),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : model!.isNotEmpty
+                      ? buildRefreshIndicator()
+                      : const Center(
+                          child: Text("Daha önce bir rota belirlemediniz"))),
         ],
+      ),
+    );
+  }
+
+  RefreshIndicator buildRefreshIndicator() {
+    return RefreshIndicator.adaptive(
+      color: Colors.white,
+      onRefresh: () async {
+        await _getRoute();
+      },
+      child: SingleChildScrollView(
+        child: Column(
+            children: model!.map((e) {
+          return RouteResponseListWidget(e);
+        }).toList()),
       ),
     );
   }
