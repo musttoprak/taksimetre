@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_colors.dart';
 import '../models/spending_category_model.dart';
 import '../widgets/spending_category.dart';
 import 'maps_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   static const categoryModels = [
     SpendingCategoryModel(
       'Kağıthane',
@@ -28,13 +29,35 @@ class HomeScreen extends StatelessWidget {
   ];
 
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String? name;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadName();
+  }
+
+  // SharedPreferences'ten name değerini yükleyen fonksiyon
+  void _loadName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      name = prefs.getString('name');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).primaryColor,
       child: Column(
         children: [
-          Container(
+          SizedBox(
             height: 180,
             child: Stack(children: [
               Container(
@@ -47,73 +70,52 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Text('Tekrar Hoşgeldin,',
                         style: Theme.of(context).textTheme.headline2),
-                    Text('Adı Soyadı!',
+                    Text("$name!",
                         style: Theme.of(context).textTheme.headline1),
                   ],
                 ),
               ),
               Positioned(
                 bottom: 0,
-                left: 0,
-                right: 0,
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const MapsScreen()));
-                        },
-                        child: Container(
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                          decoration: BoxDecoration(
-                              color: AppColors.secondaryAccent,
-                              borderRadius: BorderRadius.circular(32)),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Ücretini Hesapla',
-                                style:
-                                TextStyle(color: AppColors.primaryWhiteColor),
-                              ),
-                              SizedBox(width: 32),
-                              Icon(Icons.route,color: Colors.white,size: 32),
-                            ],
-                          ),
+                left: 30,
+                right: 30,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const MapsScreen()));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    decoration: BoxDecoration(
+                        color: AppColors.secondaryAccent,
+                        borderRadius: BorderRadius.circular(32)),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Ücretini Hesapla',
+                          style: TextStyle(
+                              color: AppColors.primaryWhiteColor, fontSize: 16),
                         ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(32),
-                            color: AppColors.secondaryAccent),
-                        child: Material(
-                          borderRadius: BorderRadius.circular(32),
-                          type: MaterialType.transparency,
-                          clipBehavior: Clip.hardEdge,
-                          child: IconButton(
-                            padding: const EdgeInsets.all(16),
-                            color: AppColors.primaryWhiteColor,
-                            iconSize: 32,
-                            icon: const Icon(
-                              Icons.history,
-                            ),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ),
-                    ]),
+                        SizedBox(width: 32),
+                        Icon(Icons.route, color: Colors.white, size: 32),
+                      ],
+                    ),
+                  ),
+                ),
               )
             ]),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 36.0, vertical: 24),
-            child: SearchBar(),
-          ),
+          //const Padding(
+          //  padding: EdgeInsets.symmetric(horizontal: 36.0, vertical: 24),
+          //  child: SearchBar(),
+          //),
           Expanded(
             child: ListView(children: [
-              for (var model in categoryModels)
+              for (var model in HomeScreen.categoryModels)
                 Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 36.0, vertical: 16),

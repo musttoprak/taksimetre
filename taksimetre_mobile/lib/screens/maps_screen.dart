@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -273,7 +271,7 @@ mixin MapsScreenMixin {
     return GoogleMap(
       onMapCreated: (controller) => _onMapCreated(controller, context),
       initialCameraPosition: CameraPosition(target: target, zoom: 11.0),
-      markers: context.watch<MapScreenCubit>().markers,
+      markers: context.watch<MapScreenCubit>().allMarkers,
       polylines:
           Set<Polyline>.of(context.watch<MapScreenCubit>().polylines.values),
       onTap: (position) {

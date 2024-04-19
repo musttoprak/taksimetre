@@ -5,6 +5,9 @@ $route['default_controller'] = 'homecontroller/index';
 $route['index'] = 'HomeController/changePage/index';
 $route['api'] = 'ApiController/index';
 $route['text'] = 'ApiController/text';
+$route['durak'] = 'ApiController/getNearbyTaxiStands';
+$route['login'] = 'ApiController/login';
+$route['register'] = 'ApiController/register';
 
 
 

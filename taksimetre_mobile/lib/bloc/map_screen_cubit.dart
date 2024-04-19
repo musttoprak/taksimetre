@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:taksimetre_mobile/models/taxi_stands_response_model.dart';
 import 'package:taksimetre_mobile/services/mapsApiService.dart';
 
 import '../models/distance_matrix_response_model.dart';
@@ -16,7 +18,9 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   PolylinePoints polylinePoints = PolylinePoints();
   String googleAPiKey = "AIzaSyCBWnZj5N6sGEpN-HzAPO5MZdSHspnDmZc";
   Map<PolylineId, Polyline> polylines = {};
+  Set<Marker> allMarkers = {};
   Set<Marker> markers = {};
+  Set<Marker> taxiStandsMarker = {};
   bool isButtonActive = true;
   LocationData? currentLocation;
   bool isStackVisible = false;
@@ -28,8 +32,10 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   LatLng? myLocation;
   LatLng? location;
   SearchTextResponseModel? model;
+  List<TaxiStandResponseModel> listStands = [];
 
-  MapScreenCubit(this.context, this.animationController,this.myLocationController,this.locationController)
+  MapScreenCubit(this.context, this.animationController,
+      this.myLocationController, this.locationController)
       : super(MapScreenInitialState()) {
     getCurrentLocation();
   }
@@ -55,12 +61,53 @@ class MapScreenCubit extends Cubit<MapScreenState> {
       }
     }
 
-    location.getLocation().then((value) {
+    location.getLocation().then((value) async {
       currentLocation = value;
+      if (currentLocation != null) {
+        listStands = await MapsApiService.getCurrentLocationByNearTaxiStand(
+            currentLocation!);
+        addTaxiStands();
+      }
       emit(MapScreenLocationState(currentLocation!));
       changeLoadingView();
     });
   }
+
+  Future<BitmapDescriptor> getCustomMarkerIcon(String imagePath) async {
+    final ByteData byteData = await rootBundle.load(imagePath);
+    final Uint8List imageData = byteData.buffer.asUint8List();
+    return BitmapDescriptor.fromBytes(imageData);
+  }
+
+  Future<String?> getPhotoForLocation(double latitude,double longitude) async {
+
+  }
+
+  void addTaxiStands() async {
+    for (var e in listStands) {
+      // Koordinatlara göre fotoğraf al
+      //final photoUrl = await getPhotoForLocation(e.latitude, e.longitude);
+
+      // Örnek olarak taksi simgesi 'taxi_icon.png' olarak varsayalım
+      final icon = await getCustomMarkerIcon('assets/taxi_icon.png');
+
+      // Fotoğraf URL'si bulunamazsa varsayılan bir fotoğraf kullan
+      //final photo = photoUrl != null ? NetworkImage(photoUrl) : AssetImage('assets/taxi_icon.png');
+
+      taxiStandsMarker.add(Marker(
+        markerId: MarkerId('${e.latitude}-${e.longitude}'),
+        position: LatLng(e.latitude, e.longitude),
+        icon: icon,
+        infoWindow: InfoWindow(
+          title: e.name,
+          snippet: "${e.distance.toStringAsFixed(2)} km",
+        )
+      ));
+    }
+    allMarkers.addAll(taxiStandsMarker);
+    emit(MapScreenAddTaxiStandsState(allMarkers));
+  }
+
 
   Future<void> changeVisible() async {
     if (isStackVisible) {
@@ -76,13 +123,15 @@ class MapScreenCubit extends Cubit<MapScreenState> {
 
   void addMarker(LatLng position) {
     if (markers.length < 2) {
-      markers.add(Marker(
+      Marker marker = Marker(
         markerId: MarkerId('${position.latitude}-${position.longitude}'),
         position: position,
         onTap: () {
           removeMarker(MarkerId('${position.latitude}-${position.longitude}'));
         },
-      ));
+      );
+      markers.add(marker);
+      allMarkers.add(marker);
       changeButtonText(true);
     } else {
       changeButtonText(false);
@@ -91,11 +140,13 @@ class MapScreenCubit extends Cubit<MapScreenState> {
 
   void removeMarker(MarkerId markerId) {
     markers.removeWhere((element) => element.markerId == markerId);
+    allMarkers.removeWhere((element) => element.markerId == markerId);
     polylines = {};
     emit(MapScreenRemoveMarkerState(polylines, markers));
   }
 
   void removeMarkerAll() {
+    allMarkers.removeAll(markers);
     markers = {};
     polylines = {};
     emit(MapScreenRemoveMarkerState(polylines, markers));
@@ -144,19 +195,24 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     polylines[id] = polyline;
   }
 
-
-  void _zoomToPolygon(LatLng firstMarkerPosition , LatLng secondMarkerPosition) {
+  void _zoomToPolygon(LatLng firstMarkerPosition, LatLng secondMarkerPosition) {
     if (mapController != null) {
-      LatLngBounds bounds = _calculateBounds(firstMarkerPosition,secondMarkerPosition);
+      LatLngBounds bounds =
+          _calculateBounds(firstMarkerPosition, secondMarkerPosition);
       mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
     }
   }
 
-  LatLngBounds _calculateBounds(LatLng firstMarkerPosition , LatLng secondMarkerPosition) {
-    double minLat = min(firstMarkerPosition.latitude, secondMarkerPosition.latitude);
-    double maxLat = max(firstMarkerPosition.latitude, secondMarkerPosition.latitude);
-    double minLng = min(firstMarkerPosition.longitude, secondMarkerPosition.longitude);
-    double maxLng = max(firstMarkerPosition.longitude, secondMarkerPosition.longitude);
+  LatLngBounds _calculateBounds(
+      LatLng firstMarkerPosition, LatLng secondMarkerPosition) {
+    double minLat =
+        min(firstMarkerPosition.latitude, secondMarkerPosition.latitude);
+    double maxLat =
+        max(firstMarkerPosition.latitude, secondMarkerPosition.latitude);
+    double minLng =
+        min(firstMarkerPosition.longitude, secondMarkerPosition.longitude);
+    double maxLng =
+        max(firstMarkerPosition.longitude, secondMarkerPosition.longitude);
 
     LatLngBounds bounds = LatLngBounds(
       southwest: LatLng(minLat, minLng),
@@ -167,22 +223,21 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   }
 
   Future<void> onSubmitButtonPressed() async {
-    print("tıklandı");
-    if(isStackVisible){
-      if(myLocation != null || location != null){
+    if (isStackVisible) {
+      if (myLocation != null || location != null) {
         removeMarkerAll();
         addMarker(myLocation!);
         addMarker(location!);
         await poly(false);
-        response =  await MapsApiService.checkPriceApi(myLocation!, location!);
+        response = await MapsApiService.checkPriceApi(myLocation!, location!);
         isStackVisible = false;
-        _zoomToPolygon(myLocation!,location!);
+        _zoomToPolygon(myLocation!, location!);
         emit(MapScreenChangeDataState(response!));
-      }else{
+      } else {
         isButtonActive = false;
         emit(MapScreenActiveState(isButtonActive));
       }
-    }else{
+    } else {
       if (markers.isNotEmpty) {
         LatLng? firstPosition;
         LatLng? secondPosition;
@@ -197,8 +252,9 @@ class MapScreenCubit extends Cubit<MapScreenState> {
           await poly(false);
         }
 
-        response =  await MapsApiService.checkPriceApi(firstPosition, secondPosition);
-        _zoomToPolygon(firstPosition,secondPosition);
+        response =
+            await MapsApiService.checkPriceApi(firstPosition, secondPosition);
+        _zoomToPolygon(firstPosition, secondPosition);
         emit(MapScreenChangeDataState(response!));
       } else {
         changeButtonText(false);
@@ -206,27 +262,27 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     }
   }
 
-  Future<void> searchText(String text,bool isFirstForm) async {
+  Future<void> searchText(String text, bool isFirstForm) async {
     model = await MapsApiService.searchTextLocation(text);
-    if(model?.formattedAddress == null){
+    if (model?.formattedAddress == null) {
       emit(MapScreenChangeSearchDataState(null));
-    }else{
+    } else {
       model!.isFirstForm = isFirstForm;
       emit(MapScreenChangeSearchDataState(model));
     }
   }
 
-  void completeSearch(){
-    if(model!.isFirstForm){
+  void completeSearch() {
+    if (model!.isFirstForm) {
       myLocationController.text = model!.formattedAddress!;
       myLocation = LatLng(model!.latitude!, model!.longitude!);
-    }else{
+    } else {
       locationController.text = model!.formattedAddress!;
       location = LatLng(model!.latitude!, model!.longitude!);
     }
   }
 
-  void clearSearch(){
+  void clearSearch() {
     model = null;
     emit(MapScreenChangeSearchDataState(model));
   }
@@ -286,8 +342,15 @@ class MapScreenRemoveMarkerState extends MapScreenState {
 
   MapScreenRemoveMarkerState(this.polylines, this.markers);
 }
+
 class MapScreenChangeSearchDataState extends MapScreenState {
   final SearchTextResponseModel? data;
 
   MapScreenChangeSearchDataState(this.data);
+}
+
+class MapScreenAddTaxiStandsState extends MapScreenState {
+  final Set<Marker> allMarkers;
+
+  MapScreenAddTaxiStandsState(this.allMarkers);
 }
