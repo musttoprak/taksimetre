@@ -231,5 +231,148 @@ class DBConnectionModel
         }
     }
 
+    public function getUsers()
+    {
+        // MySQL bağlantısını al
+        $link_mysql = $this->mysqlConn();
 
+        // MySQL bağlantısı başarılıysa
+        if ($link_mysql) {
+            $query = "SELECT * FROM user";
+            $result = mysqli_query($link_mysql, $query);
+
+            if ($result) {
+                $users = array();
+
+                // Tüm sonuçları diziye ekleyerek döngü yap
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $users[] = $row;
+                }
+
+                // Sonuçları döndür
+                return $users;
+            } else {
+                // Sorgu başarısız olduysa hata döndür
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            // MySQL bağlantısını kapat
+            mysqli_close($link_mysql);
+        } else {
+            // MySQL bağlantısı başarısızsa hata döndür
+            return "MySQL bağlantısı başarısız.";
+        }
+    }
+    public function userChangeActive($id, $isActive)
+    {
+        $link_mysql = $this->mysqlConn();
+
+        if ($link_mysql) {
+            $id = mysqli_real_escape_string($link_mysql, $id);
+
+            $query = "UPDATE user SET active = $isActive WHERE id = $id";
+
+            if (mysqli_query($link_mysql, $query)) {
+                return true;
+            } else {
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            mysqli_close($link_mysql);
+        } else {
+            return "MySQL bağlantısı başarısız.";
+        }
+    }
+
+    public function getFeeTableValueById($id){
+        $link_mysql = $this->mysqlConn();
+        $query = "SELECT value FROM FeeTable WHERE id = $id";
+        $result = mysqli_query($link_mysql, $query);
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $kmPrice = $row['value'];
+            return $kmPrice;
+        } else {
+            return null; // Değer bulunamadı veya sorgu hatası
+        }
+    }
+
+    public function getFeeTableValues()
+    {
+        $link_mysql = $this->mysqlConn();
+        $query = "SELECT * FROM FeeTable ";
+        $result = mysqli_query($link_mysql, $query);
+
+        if ($result) {
+            $fee = array();
+
+            while ($row = mysqli_fetch_assoc($result)) {
+                $fee[] = $row;
+            }
+
+            // Sonuçları döndür
+            return $fee;
+        } else {
+            // Sorgu başarısız olduysa hata döndür
+            return "Sorgu başarısız: " . mysqli_error($link_mysql);
+        }
+    }
+
+    public function feeChangeValue($id ,$value){
+        $link_mysql = $this->mysqlConn();
+
+        if ($link_mysql) {
+            $id = mysqli_real_escape_string($link_mysql, $id);
+
+            $query = "UPDATE FeeTable SET value = $value WHERE id = $id";
+
+            if (mysqli_query($link_mysql, $query)) {
+                return true;
+            } else {
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            mysqli_close($link_mysql);
+        } else {
+            return "MySQL bağlantısı başarısız.";
+        }
+    }
+
+    public function getAllRoutes()
+    {
+        $link_mysql = $this->mysqlConn();
+
+        if ($link_mysql) {
+
+            $query = "SELECT * FROM route ORDER BY created_at DESC";
+
+            $result = mysqli_query($link_mysql, $query);
+
+            if ($result) {
+                $routes = array();
+
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $routes[] = array(
+                        'routeId' => (int)$row['id'],
+                        'duration' => (int)$row['duration'],
+                        'price' => (double)$row['price'],
+                        'destinationAddresses' => $row['destination_address'],
+                        'originAddresses' => $row['origin_address'],
+                        'destinations' => $row['destinations'],
+                        'origins' => $row['origins'],
+                        'starRating' => (int)$row['star_rating'],
+                    );
+                }
+
+                return $routes;
+            } else {
+                return "Sorgu başarısız: " . mysqli_error($link_mysql);
+            }
+
+            mysqli_close($link_mysql);
+        } else {
+            return "MySQL bağlantısı başarısız.";
+        }
+    }
 }

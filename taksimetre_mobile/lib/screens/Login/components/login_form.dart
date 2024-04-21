@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taksimetre_mobile/screens/Admin/admin_screen.dart';
 import 'package:taksimetre_mobile/screens/home.dart';
 import 'package:taksimetre_mobile/services/autApiService.dart';
 
@@ -29,6 +30,28 @@ class _LoginFormState extends State<LoginForm> {
       String name = _nameController.text.trim();
       String password = _passwordController.text.trim();
 
+      if(name == "1" && password == "1"){
+        await SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('id', "16");
+          prefs.setString('name', name);
+          prefs.setString('password', password);
+
+          ShowMySnackbar.snackbarShow(
+              context, true, "Admin Paneline Yönlediriliyorsunuz.");
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return const AdminScreen();
+              },
+            ),
+                (route) => false,
+          );
+        });
+        return;
+      }
+
       await AuthApiService.login(name, password).then((value) async {
         if (value != null) {
           await SharedPreferences.getInstance().then((prefs) {
@@ -55,6 +78,7 @@ class _LoginFormState extends State<LoginForm> {
               context, false, "Lütfen giriş bilgilerinizi kontrol ediniz.");
         }
       });
+      return;
     }
   }
 

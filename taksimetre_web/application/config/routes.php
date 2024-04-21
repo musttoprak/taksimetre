@@ -11,6 +11,13 @@ $route['register'] = 'ApiController/register';
 $route['route'] = 'ApiController/route';
 $route['getRoutes'] = 'ApiController/getRoutes';
 $route['changeRatingRoute'] = 'ApiController/changeRatingRoute';
+$route['users'] = 'ApiController/users';
+$route['userChangeActive'] = 'ApiController/userChangeActive';
+$route['getFeeTableValues'] = 'ApiController/getFeeTableValues';
+$route['feeChangeValue'] = 'ApiController/feeChangeValue';
+$route['getAllRoutes'] = 'ApiController/getAllRoutes';
+$route['getAllTaxiStands'] = 'ApiController/getAllTaxiStands';
+
 
 
 
