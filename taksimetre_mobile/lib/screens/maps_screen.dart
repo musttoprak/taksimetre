@@ -11,7 +11,8 @@ import '../widgets/route_response_widget.dart';
 
 class MapsScreen extends StatefulWidget {
   final DistanceMatrixResponseModel? distanceMatrixResponseModel;
-  const MapsScreen(this.distanceMatrixResponseModel, {super.key});
+  final bool isAdmin;
+  const MapsScreen(this.distanceMatrixResponseModel,this.isAdmin ,{super.key});
 
   @override
   State<MapsScreen> createState() => _MapsScreenState();
@@ -31,7 +32,7 @@ class _MapsScreenState extends State<MapsScreen>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => MapScreenCubit(context, widget.distanceMatrixResponseModel,animationController,
+      create: (context) => MapScreenCubit(context, widget.distanceMatrixResponseModel,widget.isAdmin,animationController,
           myLocationController, locationController),
       child: BlocBuilder<MapScreenCubit, MapScreenState>(
         builder: (context, state) {

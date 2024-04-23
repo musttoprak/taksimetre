@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const MapsScreen(null),
+                        builder: (context) => const MapsScreen(null,false),
                       ),
                     );
                   },

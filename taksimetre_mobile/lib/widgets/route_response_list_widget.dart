@@ -67,7 +67,7 @@ class _RouteResponseListWidgetState extends State<RouteResponseListWidget> {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MapsScreen(widget.model),
+                              builder: (context) => MapsScreen(widget.model,false),
                             ),
                           );
                         },

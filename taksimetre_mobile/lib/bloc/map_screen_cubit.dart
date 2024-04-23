@@ -7,6 +7,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:taksimetre_mobile/models/taxi_stands_response_model.dart';
+import 'package:taksimetre_mobile/services/adminApiService.dart';
 import 'package:taksimetre_mobile/services/mapsApiService.dart';
 
 import '../constants/app_colors.dart';
@@ -18,6 +19,7 @@ import '../services/routeApiService.dart';
 class MapScreenCubit extends Cubit<MapScreenState> {
   GoogleMapController? mapController;
   DistanceMatrixResponseModel? distanceMatrixResponseModel;
+  bool isAdmin;
   bool isLoading = true;
   PolylinePoints polylinePoints = PolylinePoints();
   String googleAPiKey = "AIzaSyCBWnZj5N6sGEpN-HzAPO5MZdSHspnDmZc";
@@ -40,7 +42,7 @@ class MapScreenCubit extends Cubit<MapScreenState> {
   List<TaxiStandResponseModel> listStands = [];
   RouteResponseModel? routeResponseModel;
 
-  MapScreenCubit(this.context,this.distanceMatrixResponseModel ,this.animationController,
+  MapScreenCubit(this.context,this.distanceMatrixResponseModel ,this.isAdmin,this.animationController,
       this.myLocationController, this.locationController)
       : super(MapScreenInitialState()) {
     getCurrentLocation();
@@ -77,8 +79,13 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     location.getLocation().then((value) async {
       currentLocation = value;
       if (currentLocation != null) {
-        listStands = await MapsApiService.getCurrentLocationByNearTaxiStand(
-            currentLocation!);
+        if(isAdmin){
+          listStands = await AdminApiService.getAllTaxiStands(
+              currentLocation!);
+        }else{
+          listStands = await MapsApiService.getCurrentLocationByNearTaxiStand(
+              currentLocation!);
+        }
         addTaxiStands();
       }
       emit(MapScreenLocationState(currentLocation!));
@@ -107,8 +114,6 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     return BitmapDescriptor.fromBytes(imageData);
   }
 
-  Future<String?> getPhotoForLocation(
-      double latitude, double longitude) async {}
 
   void addTaxiStands() async {
     for (var e in listStands) {
@@ -271,13 +276,54 @@ class MapScreenCubit extends Cubit<MapScreenState> {
     polylines[id] = polyline;
   }
 
+  //void _zoomToPolygon(LatLng firstMarkerPosition, LatLng secondMarkerPosition) {
+  //  if (mapController != null) {
+  //    LatLngBounds bounds =
+  //        _calculateBounds(firstMarkerPosition, secondMarkerPosition);
+  //    mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
+  //  }
+  //}      
+
   void _zoomToPolygon(LatLng firstMarkerPosition, LatLng secondMarkerPosition) {
     if (mapController != null) {
-      LatLngBounds bounds =
-          _calculateBounds(firstMarkerPosition, secondMarkerPosition);
-      mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
+      List<LatLng> points = [];
+      polylines.forEach((key, value) {
+        points.addAll(value.points);
+      });
+      LatLngBounds bounds = _calculateBoundsWithPolygon(points);
+      // Yeni bir LatLngBounds oluştururken, üst kısmına 400 piksel ekleyelim
+      double topPadding = 100.0;
+      LatLngBounds paddedBounds = LatLngBounds(
+        southwest: LatLng(bounds.southwest.latitude, bounds.southwest.longitude),
+        northeast: LatLng(bounds.northeast.latitude + (topPadding / 111000), bounds.northeast.longitude),
+      );
+
+      mapController!.animateCamera(CameraUpdate.newLatLngBounds(paddedBounds, 10));
     }
   }
+
+  LatLngBounds _calculateBoundsWithPolygon(List<LatLng> polygonPoints) {
+    double minLat = polygonPoints[0].latitude;
+    double maxLat = polygonPoints[0].latitude;
+    double minLng = polygonPoints[0].longitude;
+    double maxLng = polygonPoints[0].longitude;
+
+    for (int i = 1; i < polygonPoints.length; i++) {
+      if (polygonPoints[i].latitude > maxLat) {
+        maxLat = polygonPoints[i].latitude;
+      } else if (polygonPoints[i].latitude < minLat) {
+        minLat = polygonPoints[i].latitude;
+      }
+      if (polygonPoints[i].longitude > maxLng) {
+        maxLng = polygonPoints[i].longitude;
+      } else if (polygonPoints[i].longitude < minLng) {
+        minLng = polygonPoints[i].longitude;
+      }
+    }
+
+    return LatLngBounds(northeast: LatLng(maxLat, maxLng), southwest: LatLng(minLat, minLng));
+  }
+
 
   LatLngBounds _calculateBounds(
       LatLng firstMarkerPosition, LatLng secondMarkerPosition) {
