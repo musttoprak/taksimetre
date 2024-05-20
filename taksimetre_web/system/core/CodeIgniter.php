@@ -372,7 +372,7 @@ if ( ! is_php('5.4'))
 
 	if (file_exists(APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php'))
 	{
-		require_once APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php';
+		require_once APPPATH . 'core/' . $CFG->config['subclass_prefix'] . 'Controller.php';
 	}
 
 	// Set a mark point for benchmarking

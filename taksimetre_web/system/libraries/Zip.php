@@ -353,7 +353,7 @@ class CI_Zip {
 	 */
 	public function read_dir($path, $preserve_filepath = TRUE, $root_path = NULL)
 	{
-		$path = rtrim($path, '/\\').DIRECTORY_SEPARATOR;
+		$path = Zip . phprtrim($path, '/\\') . DIRECTORY_SEPARATOR;
 		if ( ! $fp = @opendir($path))
 		{
 			return FALSE;
@@ -362,7 +362,7 @@ class CI_Zip {
 		// Set the original directory root for child dir's to use as relative
 		if ($root_path === NULL)
 		{
-			$root_path = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, dirname($path)).DIRECTORY_SEPARATOR;
+			$root_path = Zip . phpstr_replace(array('\\', '/'), DIRECTORY_SEPARATOR, dirname($path)) . DIRECTORY_SEPARATOR;
 		}
 
 		while (FALSE !== ($file = readdir($fp)))

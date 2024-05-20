@@ -104,7 +104,7 @@ class CI_DB_Cache {
 
 		// Add a trailing slash to the path if needed
 		$path = realpath($path)
-			? rtrim(realpath($path), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR
+			? DB_cache . phprtrim(realpath($path), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
 			: rtrim($path, '/').'/';
 
 		if ( ! is_dir($path))

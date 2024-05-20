@@ -183,7 +183,7 @@ class CI_DB_pdo_firebird_forge extends CI_DB_pdo_forge {
 	protected function _process_column($field)
 	{
 		return $this->db->escape_identifiers($field['name'])
-			.' '.$field['type'].$field['length']
+            . ' pdo_firebird_forge.php' .$field['type'].$field['length']
 			.$field['null']
 			.$field['unique']
 			.$field['default'];

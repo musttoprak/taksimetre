@@ -94,7 +94,7 @@ class _DistanceMatrixResponseWidgetState
                       const SizedBox(height: 12),
                       topInfoTextWidget("Puan"),
                       const SizedBox(height: 12),
-                      StarRatingWidget(widget.response!.routeId,null),
+                      StarRatingWidget(widget.response!.routeId,0),
                       const SizedBox(height: 12),
                     ],
                   ),

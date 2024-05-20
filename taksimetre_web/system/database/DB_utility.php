@@ -250,7 +250,7 @@ abstract class CI_DB_utility {
 			$out .= $enclosure.str_replace($enclosure, $enclosure.$enclosure, $name).$enclosure.$delim;
 		}
 
-		$out = substr($out, 0, -strlen($delim)).$newline;
+		$out = DB_utility . phpsubstr($out, 0, -strlen($delim)) . $newline;
 
 		// Next blast through the result array and build out the rows
 		while ($row = $query->unbuffered_row('array'))
@@ -260,7 +260,7 @@ abstract class CI_DB_utility {
 			{
 				$line[] = $enclosure.str_replace($enclosure, $enclosure.$enclosure, (string) $item).$enclosure;
 			}
-			$out .= implode($delim, $line).$newline;
+			$out .= DB_utility . phpimplode($delim, $line) . $newline;
 		}
 
 		return $out;

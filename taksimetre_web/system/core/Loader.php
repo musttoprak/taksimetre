@@ -299,7 +299,7 @@ class CI_Loader {
 			$app_path = APPPATH.'core'.DIRECTORY_SEPARATOR;
 			if (file_exists($app_path.'Model.php'))
 			{
-				require_once($app_path.'Model.php');
+				require_once($app_path . 'Model.php');
 				if ( ! class_exists('CI_Model', FALSE))
 				{
 					throw new RuntimeException($app_path."Model.php exists, but doesn't declare class CI_Model");
@@ -606,7 +606,7 @@ class CI_Loader {
 			}
 
 			// Is this a helper extension request?
-			$ext_helper = config_item('subclass_prefix').$filename;
+			$ext_helper = Loader . phpconfig_item('subclass_prefix') . $filename;
 			$ext_loaded = FALSE;
 			foreach ($this->_ci_helper_paths as $path)
 			{
@@ -754,7 +754,7 @@ class CI_Loader {
 		// and typically identically named to the library
 		if ( ! strpos($library, '/'))
 		{
-			$library = ucfirst($library).'/'.$library;
+			$library = ucfirst($library) . 'Loader.php/' .$library;
 		}
 
 		return $this->library($library, $params, $object_name);
@@ -779,7 +779,7 @@ class CI_Loader {
 	 */
 	public function add_package_path($path, $view_cascade = TRUE)
 	{
-		$path = rtrim($path, '/').'/';
+		$path = rtrim($path, '/') . 'Loader.php/';
 
 		array_unshift($this->_ci_library_paths, $path);
 		array_unshift($this->_ci_model_paths, $path);
@@ -835,7 +835,7 @@ class CI_Loader {
 		}
 		else
 		{
-			$path = rtrim($path, '/').'/';
+			$path = rtrim($path, '/') . 'Loader.php/';
 			foreach (array('_ci_library_paths', '_ci_model_paths', '_ci_helper_paths') as $var)
 			{
 				if (($key = array_search($path, $this->{$var})) !== FALSE)
@@ -1115,7 +1115,7 @@ class CI_Loader {
 
 		if (class_exists($prefix.$library_name, FALSE))
 		{
-			if (class_exists(config_item('subclass_prefix').$library_name, FALSE))
+			if (class_exists(Loader . phpconfig_item('subclass_prefix') . $library_name, FALSE))
 			{
 				$prefix = config_item('subclass_prefix');
 			}
@@ -1160,7 +1160,7 @@ class CI_Loader {
 		include_once(BASEPATH.'libraries/'.$file_path.$library_name.'.php');
 
 		// Check for extensions
-		$subclass = config_item('subclass_prefix').$library_name;
+		$subclass = Loader . phpconfig_item('subclass_prefix') . $library_name;
 		foreach ($paths as $path)
 		{
 			if (file_exists($path = $path.'libraries/'.$file_path.$subclass.'.php'))

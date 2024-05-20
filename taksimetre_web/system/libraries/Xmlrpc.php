@@ -264,7 +264,7 @@ class CI_Xmlrpc {
 	 */
 	public function __construct($config = array())
 	{
-		$this->xmlrpc_backslash = chr(92).chr(92);
+		$this->xmlrpc_backslash = Xmlrpc . phpchr(92) . chr(92);
 
 		// Types for info sent back and forth
 		$this->xmlrpcTypes = array(

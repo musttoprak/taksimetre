@@ -84,73 +84,75 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _nameController,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            cursorColor: kPrimaryColor,
-            onSaved: (email) {},
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Kullanıcı adı boş olamaz';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(
-              hintText: "Kullanıcı adı",
-              prefixIcon: Padding(
-                padding: EdgeInsets.all(defaultPadding),
-                child: Icon(Icons.person),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: defaultPadding),
-            child: TextFormField(
-              controller: _passwordController,
-              textInputAction: TextInputAction.done,
-              obscureText: true,
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _nameController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
               cursorColor: kPrimaryColor,
+              onSaved: (email) {},
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Şifre boş olamaz';
+                  return 'Kullanıcı adı boş olamaz';
                 }
                 return null;
               },
               decoration: const InputDecoration(
-                hintText: "Şifreniz",
+                hintText: "Kullanıcı adı",
                 prefixIcon: Padding(
                   padding: EdgeInsets.all(defaultPadding),
-                  child: Icon(Icons.lock),
+                  child: Icon(Icons.person),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: defaultPadding),
-          ElevatedButton(
-            onPressed: _login,
-            child: const Text(
-              "GİRİŞ",
-            ),
-          ),
-          const SizedBox(height: defaultPadding),
-          AlreadyHaveAnAccountCheck(
-            press: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return const SignUpScreen();
-                  },
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: defaultPadding),
+              child: TextFormField(
+                controller: _passwordController,
+                textInputAction: TextInputAction.done,
+                obscureText: true,
+                cursorColor: kPrimaryColor,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Şifre boş olamaz';
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  hintText: "Şifreniz",
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.all(defaultPadding),
+                    child: Icon(Icons.lock),
+                  ),
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+            const SizedBox(height: defaultPadding),
+            ElevatedButton(
+              onPressed: _login,
+              child: const Text(
+                "GİRİŞ",
+              ),
+            ),
+            const SizedBox(height: defaultPadding),
+            AlreadyHaveAnAccountCheck(
+              press: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const SignUpScreen();
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

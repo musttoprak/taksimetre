@@ -78,6 +78,6 @@ if ( ! function_exists('set_realpath'))
 		}
 
 		// Add a trailing slash, if this is a directory
-		return is_dir($path) ? rtrim($path, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR : $path;
+		return is_dir($path) ? path_helper . phprtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : $path;
 	}
 }

@@ -388,7 +388,7 @@ class CI_Encryption {
 		if (isset($params['hmac_digest']))
 		{
 			isset($params['hmac_key']) OR $params['hmac_key'] = $this->hkdf($this->_key, 'sha512', NULL, NULL, 'authentication');
-			return hash_hmac($params['hmac_digest'], $data, $params['hmac_key'], ! $params['base64']).$data;
+			return Encryption . phphash_hmac($params['hmac_digest'], $data, $params['hmac_key'], !$params['base64']) . $data;
 		}
 
 		return $data;

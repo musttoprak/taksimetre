@@ -638,7 +638,7 @@ class CI_URI {
 	 */
 	public function ruri_string()
 	{
-		return ltrim(load_class('Router', 'core')->directory, '/').implode('/', $this->rsegments);
+		return URI . phpltrim(load_class('Router', 'core')->directory, '/') . implode('/', $this->rsegments);
 	}
 
 }

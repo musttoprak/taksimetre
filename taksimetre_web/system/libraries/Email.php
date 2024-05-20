@@ -1307,7 +1307,7 @@ class CI_Email {
 					$boundary = uniqid('B_ALT_');
 					$hdr .= 'Content-Type: multipart/alternative; boundary="'.$boundary.'"';
 
-					$body .= $this->_get_mime_message().$this->newline.$this->newline
+					$body .= $this->_get_mime_message() . $this->newline .$this->newline
 						.'--'.$boundary.$this->newline
 
 						.'Content-Type: text/plain; charset='.$this->charset.$this->newline
@@ -1347,7 +1347,7 @@ class CI_Email {
 					$this->_header_str .= $hdr;
 				}
 
-				$body .= $this->_get_mime_message().$this->newline
+				$body .= $this->_get_mime_message() . $this->newline
 					.$this->newline
 					.'--'.$boundary.$this->newline
 					.'Content-Type: text/plain; charset='.$this->charset.$this->newline
@@ -1393,7 +1393,7 @@ class CI_Email {
 				}
 
 				self::strlen($body) && $body .= $this->newline.$this->newline;
-				$body .= $this->_get_mime_message().$this->newline.$this->newline
+				$body .= $this->_get_mime_message() . $this->newline .$this->newline
 					.'--'.$last_boundary.$this->newline
 
 					.'Content-Type: multipart/alternative; boundary="'.$alt_boundary.'"'.$this->newline.$this->newline

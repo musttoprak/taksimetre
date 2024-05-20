@@ -12,7 +12,8 @@ import '../widgets/route_response_widget.dart';
 class MapsScreen extends StatefulWidget {
   final DistanceMatrixResponseModel? distanceMatrixResponseModel;
   final bool isAdmin;
-  const MapsScreen(this.distanceMatrixResponseModel,this.isAdmin ,{super.key});
+
+  const MapsScreen(this.distanceMatrixResponseModel, this.isAdmin, {super.key});
 
   @override
   State<MapsScreen> createState() => _MapsScreenState();
@@ -32,8 +33,13 @@ class _MapsScreenState extends State<MapsScreen>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => MapScreenCubit(context, widget.distanceMatrixResponseModel,widget.isAdmin,animationController,
-          myLocationController, locationController),
+      create: (context) => MapScreenCubit(
+          context,
+          widget.distanceMatrixResponseModel,
+          widget.isAdmin,
+          animationController,
+          myLocationController,
+          locationController),
       child: BlocBuilder<MapScreenCubit, MapScreenState>(
         builder: (context, state) {
           return buildScaffold(context);
@@ -62,7 +68,13 @@ mixin MapsScreenMixin {
             : const Center(child: CircularProgressIndicator()),
         bottomBar(context),
         topInfo(context),
-        taxiTopInfo(context)
+        taxiTopInfo(context),
+        SafeArea(
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_outlined,color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+        )
       ]),
     );
   }
@@ -80,7 +92,6 @@ mixin MapsScreenMixin {
       onTap: (position) {
         context.read<MapScreenCubit>().addMarker(position);
       },
-      trafficEnabled: true,
       myLocationEnabled: true,
       myLocationButtonEnabled: true,
     );
@@ -123,7 +134,8 @@ mixin MapsScreenMixin {
 
   Widget bottomBar(BuildContext context) {
     return Visibility(
-      visible: context.watch<MapScreenCubit>().response == null && context.watch<MapScreenCubit>().routeResponseModel == null ,
+      visible: context.watch<MapScreenCubit>().response == null &&
+          context.watch<MapScreenCubit>().routeResponseModel == null,
       child: Positioned(
         bottom: 12,
         left: 12,
@@ -332,7 +344,8 @@ mixin MapsScreenMixin {
               SizedBox(
                 width: double.maxFinite,
                 child: RouteResponseWidget(
-                    response: context.watch<MapScreenCubit>().routeResponseModel),
+                    response:
+                        context.watch<MapScreenCubit>().routeResponseModel),
               ),
               Padding(
                 padding: const EdgeInsets.all(24),

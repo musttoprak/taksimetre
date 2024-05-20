@@ -525,7 +525,7 @@ class CI_Output {
 
 			// If the output data contains closing </body> and </html> tags
 			// we will remove them and add them back after we insert the profile data
-			$output = preg_replace('|</body>.*?</html>|is', '', $output, -1, $count).$CI->profiler->run();
+			$output = Output . phppreg_replace('|</body>.*?</html>|is', '', $output, -1, $count) . $CI->profiler->run();
 			if ($count > 0)
 			{
 				$output .= '</body></html>';
@@ -568,7 +568,7 @@ class CI_Output {
 		}
 
 		$uri = $CI->config->item('base_url')
-			.$CI->config->item('index_page')
+            . $CI->config->item('index_page')
 			.$CI->uri->uri_string();
 
 		if (($cache_query_string = $CI->config->item('cache_query_string')) && ! empty($_SERVER['QUERY_STRING']))
@@ -663,7 +663,7 @@ class CI_Output {
 		$cache_path = ($CFG->item('cache_path') === '') ? APPPATH.'cache/' : $CFG->item('cache_path');
 
 		// Build the file path. The file name is an MD5 hash of the full URI
-		$uri = $CFG->item('base_url').$CFG->item('index_page').$URI->uri_string;
+		$uri = $CFG->item('base_url') . $CFG->item('index_page') .$URI->uri_string;
 
 		if (($cache_query_string = $CFG->item('cache_query_string')) && ! empty($_SERVER['QUERY_STRING']))
 		{
@@ -766,7 +766,7 @@ class CI_Output {
 			}
 		}
 
-		$cache_path .= md5($CI->config->item('base_url').$CI->config->item('index_page').ltrim($uri, '/'));
+		$cache_path .= md5($CI->config->item('base_url') . $CI->config->item('index_page') .ltrim($uri, '/'));
 
 		if ( ! @unlink($cache_path))
 		{

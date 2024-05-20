@@ -27,7 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _getRoute() async {
-    List<DistanceMatrixResponseModel>? result = await RouteApiService.getRoutes();
+    print("get route");
+    List<DistanceMatrixResponseModel>? result =
+        await RouteApiService.getRoutes();
     setState(() {
       model = result;
       isLoading = false;
@@ -76,9 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const MapsScreen(null,false),
+                        builder: (context) => const MapsScreen(null, false),
                       ),
                     );
+
+                    await _getRoute();
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -124,7 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: SingleChildScrollView(
         child: Column(
             children: model!.map((e) {
-          return RouteResponseListWidget(e);
+          return RouteResponseListWidget(
+            model: e,
+          );
         }).toList()),
       ),
     );

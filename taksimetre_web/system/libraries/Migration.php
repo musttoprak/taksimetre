@@ -139,7 +139,7 @@ class CI_Migration {
 		$this->_migration_path !== '' OR $this->_migration_path = APPPATH.'migrations/';
 
 		// Add trailing slash if not set
-		$this->_migration_path = rtrim($this->_migration_path, '/').'/';
+		$this->_migration_path = rtrim($this->_migration_path, '/') . 'Migration.php/';
 
 		// Load migration language
 		$this->lang->load('migration');

@@ -696,7 +696,7 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 			}
 			elseif (preg_match('/\s*(!?=|<>|\sIS(?:\s+NOT)?\s)\s*$/i', $k, $match, PREG_OFFSET_CAPTURE))
 			{
-				$k = substr($k, 0, $match[0][1]).($match[1][0] === '=' ? ' IS NULL' : ' IS NOT NULL');
+				$k = DB_query_builder . phpsubstr($k, 0, $match[0][1]) . ($match[1][0] === '=' ? ' IS NULL' : ' IS NOT NULL');
 			}
 
 			${$qb_key} = array('condition' => $prefix.$k, 'value' => $v, 'escape' => $escape);
@@ -2361,7 +2361,7 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 		}
 
 		$sql .= $this->_compile_wh('qb_where')
-			.$this->_compile_group_by()
+            . $this->_compile_group_by()
 			.$this->_compile_wh('qb_having')
 			.$this->_compile_order_by(); // ORDER BY
 
@@ -2440,7 +2440,7 @@ abstract class CI_DB_query_builder extends CI_DB_driver {
 						.' '.trim($matches[3]).$matches[4].$matches[5];
 				}
 
-				$this->{$qb_key}[$i] = implode('', $conditions).(isset($this->{$qb_key}[$i]['value']) ? ' '.$this->{$qb_key}[$i]['value'] : '');
+				$this->{$qb_key}[$i] = DB_query_builder . phpimplode('', $conditions) . (isset($this->{$qb_key}[$i]['value']) ? ' ' . $this->{$qb_key}[$i]['value'] : '');
 			}
 
 			return ($qb_key === 'qb_having' ? "\nHAVING " : "\nWHERE ")

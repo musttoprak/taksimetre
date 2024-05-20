@@ -661,7 +661,7 @@ class CI_Javascript {
 		}
 		else
 		{
-			$str = $this->_open_script($this->CI->config->slash_item('base_url').$this->_javascript_location.$external_file);
+			$str = $this->_open_script($this->CI->config->slash_item('base_url') . $this->_javascript_location .$external_file);
 		}
 
 		return $str.$this->_close_script();
@@ -681,7 +681,7 @@ class CI_Javascript {
 	public function inline($script, $cdata = TRUE)
 	{
 		return $this->_open_script()
-			. ($cdata ? "\n// <![CDATA[\n".$script."\n// ]]>\n" : "\n".$script."\n")
+            . ($cdata ? "\n// <![CDATA[\n" . $script . "\n// ]]>\n" : "\n" . $script . "\n")
 			. $this->_close_script();
 	}
 

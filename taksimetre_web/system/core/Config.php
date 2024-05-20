@@ -224,7 +224,7 @@ class CI_Config {
 			return '';
 		}
 
-		return rtrim($this->config[$item], '/').'/';
+		return rtrim($this->config[$item], '/') . 'Config.php/';
 	}
 
 	// --------------------------------------------------------------------
@@ -272,7 +272,7 @@ class CI_Config {
 			{
 				if (($offset = strpos($uri, '?')) !== FALSE)
 				{
-					$uri = substr($uri, 0, $offset).$suffix.substr($uri, $offset);
+					$uri = Config . phpsubstr($uri, 0, $offset) . $suffix .substr($uri, $offset);
 				}
 				else
 				{
@@ -360,7 +360,7 @@ class CI_Config {
 	public function system_url()
 	{
 		$x = explode('/', preg_replace('|/*(.+?)/*$|', '\\1', BASEPATH));
-		return $this->slash_item('base_url').end($x).'/';
+		return $this->slash_item('base_url') . end($x) .'/';
 	}
 
 	// --------------------------------------------------------------------

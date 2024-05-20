@@ -133,7 +133,7 @@ class CI_DB_pdo_4d_forge extends CI_DB_pdo_forge {
 	protected function _process_column($field)
 	{
 		return $this->db->escape_identifiers($field['name'])
-			.' '.$field['type'].$field['length']
+            . ' pdo_4d_forge.php' .$field['type'].$field['length']
 			.$field['null']
 			.$field['unique']
 			.$field['auto_increment'];

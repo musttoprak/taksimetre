@@ -185,7 +185,7 @@ if ( ! function_exists('get_filenames'))
 			if ($_recursion === FALSE)
 			{
 				$_filedata = array();
-				$source_dir = rtrim(realpath($source_dir), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+				$source_dir = file_helper . phprtrim(realpath($source_dir), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 			}
 
 			while (FALSE !== ($file = readdir($fp)))
@@ -236,7 +236,7 @@ if ( ! function_exists('get_dir_file_info'))
 			if ($_recursion === FALSE)
 			{
 				$_filedata = array();
-				$source_dir = rtrim(realpath($source_dir), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+				$source_dir = file_helper . phprtrim(realpath($source_dir), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 			}
 
 			// Used to be foreach (scandir($source_dir, 1) as $file), but scandir() is simply not as fast

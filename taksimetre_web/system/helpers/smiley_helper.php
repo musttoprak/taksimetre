@@ -160,7 +160,7 @@ if ( ! function_exists('get_clickable_smileys'))
 		}
 
 		// Add a trailing slash to the file path if needed
-		$image_url = rtrim($image_url, '/').'/';
+		$image_url = rtrim($image_url, '/') . 'smiley_helper.php/';
 
 		$used = array();
 		foreach ($smileys as $key => $val)
@@ -204,7 +204,7 @@ if ( ! function_exists('parse_smileys'))
 		}
 
 		// Add a trailing slash to the file path if needed
-		$image_url = rtrim($image_url, '/').'/';
+		$image_url = rtrim($image_url, '/') . 'smiley_helper.php/';
 
 		foreach ($smileys as $key => $val)
 		{

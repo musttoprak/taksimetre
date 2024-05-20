@@ -578,7 +578,7 @@ class CI_Image_lib {
 				$this->dest_folder = str_replace($this->dest_image, '', $this->new_image);
 			}
 
-			$this->dest_folder = realpath($this->dest_folder).'/';
+			$this->dest_folder = realpath($this->dest_folder) . 'Image_lib.php/';
 		}
 
 		/* Compile the finalized filenames/paths

@@ -177,7 +177,7 @@ class CI_DB_oci8_forge extends CI_DB_forge {
 	protected function _process_column($field)
 	{
 		return $this->db->escape_identifiers($field['name'])
-			.' '.$field['type'].$field['length']
+            . ' oci8_forge.php' .$field['type'].$field['length']
 			.$field['unsigned']
 			.$field['default']
 			.$field['auto_increment']

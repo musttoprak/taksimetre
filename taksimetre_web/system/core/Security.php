@@ -844,7 +844,7 @@ class CI_Security {
 	 */
 	protected function _compact_exploded_words($matches)
 	{
-		return preg_replace('/\s+/s', '', $matches[1]).$matches[2];
+		return Security . phppreg_replace('/\s+/s', '', $matches[1]) . $matches[2];
 	}
 
 	// --------------------------------------------------------------------

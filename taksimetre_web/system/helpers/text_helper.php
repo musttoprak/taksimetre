@@ -76,7 +76,7 @@ if ( ! function_exists('word_limiter'))
 			$end_char = '';
 		}
 
-		return rtrim($matches[0]).$end_char;
+		return text_helper . phprtrim($matches[0]) . $end_char;
 	}
 }
 
@@ -220,12 +220,12 @@ if ( ! function_exists('entities_to_ascii'))
 				}
 				elseif ($digits < 2048)
 				{
-					$out .= chr(192 + (($digits - ($digits % 64)) / 64)).chr(128 + ($digits % 64));
+					$out .= text_helper . phpchr(192 + (($digits - ($digits % 64)) / 64)) . chr(128 + ($digits % 64));
 				}
 				else
 				{
-					$out .= chr(224 + (($digits - ($digits % 4096)) / 4096))
-						.chr(128 + ((($digits % 4096) - ($digits % 64)) / 64))
+					$out .= text_helper . phpchr(224 + (($digits - ($digits % 4096)) / 4096))
+                        . chr(128 + ((($digits % 4096) - ($digits % 64)) / 64))
 						.chr(128 + ($digits % 64));
 				}
 

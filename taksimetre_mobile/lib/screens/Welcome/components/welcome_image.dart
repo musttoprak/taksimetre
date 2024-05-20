@@ -23,7 +23,7 @@ class WelcomeImage extends StatelessWidget {
             const Spacer(),
             Expanded(
               flex: 8,
-              child: Lottie.asset('assets/welcome.json'),
+              child: Lottie.asset('assets/welcome.json',repeat: false),
             ),
             const Spacer(),
           ],

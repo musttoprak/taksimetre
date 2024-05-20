@@ -5,12 +5,10 @@ import '../components/star_rating_widget.dart';
 import '../constants/app_colors.dart';
 import '../models/distance_matrix_response_model.dart';
 import '../screens/maps_screen.dart';
-import '../services/routeApiService.dart';
 
 class RouteResponseListWidget extends StatefulWidget {
-  DistanceMatrixResponseModel model;
-
-  RouteResponseListWidget(this.model, {super.key});
+  final DistanceMatrixResponseModel model;
+  const RouteResponseListWidget({required this.model,super.key});
 
   @override
   State<RouteResponseListWidget> createState() =>
@@ -27,7 +25,6 @@ class _RouteResponseListWidgetState extends State<RouteResponseListWidget> {
         child: Stack(
           children: [
             Container(
-              height: 100,
               margin: const EdgeInsets.only(top: 12),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -40,37 +37,44 @@ class _RouteResponseListWidgetState extends State<RouteResponseListWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Image.asset("assets/route.png",
-                      width: 52, color: AppColors.headerTextColor),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      PriceText(price: widget.model.price),
-                      StarRatingWidget(widget.model.routeId,widget.model.starRating)
-                    ],
+                  Flexible(
+                    flex: 3,
+                    child: Image.asset("assets/route.png",
+                        width: 52, color: AppColors.headerTextColor),
                   ),
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
+                  Flexible(
+                    flex: 3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        PriceText(price: widget.model.price),
+                        StarRatingWidget(widget.model.routeId,widget.model.starRating)
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    flex: 1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          color: AppColors.secondaryAccent.withAlpha(80)),
+                      child: Material(
                         borderRadius: BorderRadius.circular(24),
-                        color: AppColors.secondaryAccent.withAlpha(80)),
-                    child: Material(
-                      borderRadius: BorderRadius.circular(24),
-                      type: MaterialType.transparency,
-                      clipBehavior: Clip.hardEdge,
-                      child: IconButton(
-                        color: AppColors.primaryWhiteColor,
-                        iconSize: 18,
-                        icon: const Icon(Icons.golf_course),
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MapsScreen(widget.model,false),
-                            ),
-                          );
-                        },
+                        type: MaterialType.transparency,
+                        clipBehavior: Clip.hardEdge,
+                        child: IconButton(
+                          color: AppColors.primaryWhiteColor,
+                          iconSize: 18,
+                          icon: const Icon(Icons.golf_course),
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MapsScreen(widget.model,false),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   )

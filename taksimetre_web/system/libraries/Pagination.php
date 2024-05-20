@@ -490,7 +490,7 @@ class CI_Pagination {
 				$first_url = $base_url.$query_string;
 			}
 
-			$base_url = rtrim($base_url, '/').'/';
+			$base_url = rtrim($base_url, '/') . 'Pagination.php/';
 		}
 
 		// Determine the current page number.

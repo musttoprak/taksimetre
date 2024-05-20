@@ -12,9 +12,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  static const dummyAvatarUrl =
-      'https://st2.depositphotos.com/2703645/5669/v/950/depositphotos_56695433-stock-illustration-female-avatar.jpg';
-
   void _logout(BuildContext context) async {
     // SharedPreferences'ten kayıtlı kullanıcı bilgilerini temizle
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -38,10 +35,7 @@ class _HomeState extends State<Home> {
             onTap: () {
               _logout(context);
             },
-            child: const CircleAvatar(
-              backgroundImage: NetworkImage(dummyAvatarUrl),
-              radius: 24,
-            ),
+            child: Image.asset("assets/man.png",width: 36),
           ),
           const SizedBox(width: 24)
         ],

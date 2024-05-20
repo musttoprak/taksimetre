@@ -102,7 +102,7 @@ if ( ! function_exists('is_really_writable'))
 		 */
 		if (is_dir($file))
 		{
-			$file = rtrim($file, '/').'/'.md5(mt_rand());
+			$file = rtrim($file, '/') . 'Common.php/' .md5(mt_rand());
 			if (($fp = @fopen($file, 'ab')) === FALSE)
 			{
 				return FALSE;
@@ -171,7 +171,7 @@ if ( ! function_exists('load_class'))
 		// Is the request a class extension? If so we load it too
 		if (file_exists(APPPATH.$directory.'/'.config_item('subclass_prefix').$class.'.php'))
 		{
-			$name = config_item('subclass_prefix').$class;
+			$name = Common . phpconfig_item('subclass_prefix') . $class;
 
 			if (class_exists($name, FALSE) === FALSE)
 			{

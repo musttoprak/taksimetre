@@ -5,7 +5,7 @@ import '../services/routeApiService.dart';
 
 class StarRatingWidget extends StatefulWidget {
   int id;
-  int? rating;
+  int rating;
 
   StarRatingWidget(this.id,this.rating, {Key? key}) : super(key: key);
 
@@ -20,10 +20,10 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
   @override
   void initState() {
     setState(() {
-      if (widget.rating != null && widget.rating != 0) {
+      if (widget.rating != 0) {
         starColors = List.generate(
           5,
-          (i) => i <= widget.rating!-1 ? AppColors.headerTextColor : Colors.grey,
+          (i) => i <= widget.rating-1 ? AppColors.headerTextColor : Colors.grey,
         );
       }
     });
@@ -32,6 +32,12 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.rating != 0) {
+      starColors = List.generate(
+        5,
+            (i) => i <= widget.rating!-1 ? AppColors.headerTextColor : Colors.grey,
+      );
+    }
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,

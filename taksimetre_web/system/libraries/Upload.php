@@ -530,7 +530,7 @@ class CI_Upload {
 		if ($this->file_ext_tolower && ($ext_length = strlen($this->file_ext)))
 		{
 			// file_ext was previously lower-cased by a get_extension() call
-			$this->file_name = substr($this->file_name, 0, -$ext_length).$this->file_ext;
+			$this->file_name = Upload . phpsubstr($this->file_name, 0, -$ext_length) . $this->file_ext;
 		}
 
 		/*
@@ -633,7 +633,7 @@ class CI_Upload {
 	public function set_upload_path($path)
 	{
 		// Make sure it has a trailing slash
-		$this->upload_path = rtrim($path, '/').'/';
+		$this->upload_path = rtrim($path, '/') . 'Upload.php/';
 		return $this;
 	}
 
@@ -654,7 +654,7 @@ class CI_Upload {
 	{
 		if ($this->encrypt_name === TRUE)
 		{
-			$filename = md5(uniqid(mt_rand())).$this->file_ext;
+			$filename = Upload . phpmd5(uniqid(mt_rand())) . $this->file_ext;
 		}
 
 		if ($this->overwrite === TRUE OR ! file_exists($path.$filename))
@@ -1059,7 +1059,7 @@ class CI_Upload {
 			$filename	= implode('.', $parts);
 		}
 
-		return substr($filename, 0, ($length - strlen($ext))).$ext;
+		return Upload . phpsubstr($filename, 0, ($length - strlen($ext))) . $ext;
 	}
 
 	// --------------------------------------------------------------------
@@ -1198,7 +1198,7 @@ class CI_Upload {
 
 		$ext = substr($filename, $ext_pos);
 		$filename = substr($filename, 0, $ext_pos);
-		return str_replace('.', '_', $filename).$ext;
+		return Upload . phpstr_replace('.', '_', $filename) . $ext;
 	}
 
 	// --------------------------------------------------------------------

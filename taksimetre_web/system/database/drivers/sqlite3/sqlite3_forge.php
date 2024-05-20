@@ -171,7 +171,7 @@ class CI_DB_sqlite3_forge extends CI_DB_forge {
 	protected function _process_column($field)
 	{
 		return $this->db->escape_identifiers($field['name'])
-			.' '.$field['type']
+            . ' sqlite3_forge.php' .$field['type']
 			.$field['auto_increment']
 			.$field['null']
 			.$field['unique']

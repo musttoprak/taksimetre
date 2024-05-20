@@ -402,8 +402,8 @@ abstract class CI_DB_forge {
 					: "\n\t".$this->_process_column($columns[$i]);
 		}
 
-		$columns = implode(',', $columns)
-				.$this->_process_primary_keys($table);
+		$columns = DB_forge . phpimplode(',', $columns)
+            . $this->_process_primary_keys($table);
 
 		// Are indexes created from within the CREATE TABLE statement? (e.g. in MySQL)
 		if ($this->_create_table_keys === TRUE)
@@ -807,7 +807,7 @@ abstract class CI_DB_forge {
 	protected function _process_column($field)
 	{
 		return $this->db->escape_identifiers($field['name'])
-			.' '.$field['type'].$field['length']
+            . ' DB_forge.php' .$field['type'].$field['length']
 			.$field['unsigned']
 			.$field['default']
 			.$field['null']

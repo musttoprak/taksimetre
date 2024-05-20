@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../constants/app_colors.dart';
 import '../../models/distance_matrix_response_model.dart';
-import '../../models/fee_table_response_model.dart';
-import '../../services/adminApiService.dart';
 import '../../widgets/route_response_list_widget.dart';
 
 class RoutesScreen extends StatefulWidget {
@@ -50,7 +48,7 @@ class _RoutesScreenState extends State<RoutesScreen> {
               const SizedBox(height: 24),
               Column(
                 children: routes.map((e) {
-                  return RouteResponseListWidget(e);
+                  return RouteResponseListWidget(model: e);
                 }).toList(),
               )
             ],

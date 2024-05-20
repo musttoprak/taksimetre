@@ -168,7 +168,7 @@ class CI_DB_pdo_oci_forge extends CI_DB_pdo_forge {
 	protected function _process_column($field)
 	{
 		return $this->db->escape_identifiers($field['name'])
-			.' '.$field['type'].$field['length']
+            . ' pdo_oci_forge.php' .$field['type'].$field['length']
 			.$field['unsigned']
 			.$field['default']
 			.$field['auto_increment']
